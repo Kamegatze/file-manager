@@ -22,11 +22,23 @@ public class JwtServiceImp implements JwtService {
     @Value("${app.name-application}")
     private String issuer;
 
-    @Value("${app.time}")
-    private Integer time;
+    @Value("${app.access-token}")
+    private Integer timeAccess;
+
+    @Value("${app.refresh-token}")
+    private Integer timeRefresh;
 
     @Override
-    public String generate(Authentication authentication) {
+    public String generateAccess(Authentication authentication) {
+        return generateToken(authentication, timeAccess);
+    }
+
+    @Override
+    public String generateRefresh(Authentication authentication) {
+        return generateToken(authentication, timeRefresh);
+    }
+
+    private String generateToken(Authentication authentication, Integer time) {
         UsersDetails usersDetails = (UsersDetails) authentication.getPrincipal();
         Instant now = Instant.now();
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
