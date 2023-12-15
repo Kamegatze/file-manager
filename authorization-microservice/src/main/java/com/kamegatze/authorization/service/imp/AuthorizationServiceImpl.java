@@ -1,8 +1,14 @@
 package com.kamegatze.authorization.service.imp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kamegatze.authorization.configuration.security.details.UsersDetails;
+import com.kamegatze.authorization.dto.ETokenType;
+import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
+import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.model.Authority;
 import com.kamegatze.authorization.model.EAuthority;
@@ -13,6 +19,8 @@ import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
 import com.kamegatze.authorization.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,9 +29,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -45,6 +59,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
+
+    private final JwtIssuerValidator jwtValidator;
 
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
@@ -78,9 +94,51 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtService.generate(authentication);
+        String tokenAccess = jwtService.generateAccess((UsersDetails) authentication.getPrincipal());
+        String tokenRefresh = jwtService.generateRefresh((UsersDetails) authentication.getPrincipal());
+
         return JwtDto.builder()
-                .token(token)
+                .tokenAccess(tokenAccess)
+                .refreshToken(tokenRefresh)
+                .type(ETokenType.Bearer)
                 .build();
+    }
+
+    @Override
+    public void refresh(HttpServletRequest request, HttpServletResponse response) throws RefreshTokenIsNullException, UserNotExistException, IOException {
+        final String token = Optional.of(
+                request.getHeader(
+                        ETypeTokenHeader.AuthorizationRefresh.name()
+                )
+        ).orElseThrow(() -> new RefreshTokenIsNullException("Token is not exist"));
+        OAuth2TokenValidatorResult result = jwtValidator.validate(
+                new Jwt(token,
+                        jwtService.getIssuedAt(token),
+                        jwtService.getExpiresAt(token),
+                        jwtService.getHeaders(token),
+                        jwtService.getClaims(token))
+        );
+        if (result.hasErrors()) {
+            throw new InvalidBearerTokenException("Current refresh token is invalid");
+        }
+        String login = jwtService.getLogin(token);
+        if(!usersRepository.existsByLogin(jwtService.getLogin(token))) {
+            throw new UserNotExistException("user with current login not exist");
+        }
+
+        UsersDetails usersDetails = new UsersDetails(usersRepository.findByLogin(login)
+                .orElseThrow());
+
+        String tokenAccess = jwtService.generateAccess(usersDetails);
+        String tokenRefresh = jwtService.generateRefresh(usersDetails);
+
+        new ObjectMapper().writeValue(
+                response.getOutputStream(),
+                JwtDto.builder()
+                        .refreshToken(tokenRefresh)
+                        .tokenAccess(tokenAccess)
+                        .type(ETokenType.Bearer)
+                        .build()
+        );
     }
 }

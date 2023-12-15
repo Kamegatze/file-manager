@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtDto {
-    private String token;
+    private String tokenAccess;
     private String refreshToken;
-    private String ETypeToken;
+    private ETokenType type;
 }

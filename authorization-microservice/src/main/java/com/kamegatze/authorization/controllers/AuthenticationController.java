@@ -4,8 +4,12 @@ import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
+import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -48,5 +53,13 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
+    }
+
+    @PostMapping("/refresh-token")
+    public void handleRefreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws IOException,
+            RefreshTokenIsNullException,
+            UserNotExistException {
+        authorizationService.refresh(request, response);
     }
 }
