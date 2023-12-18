@@ -1,6 +1,8 @@
 package com.kamegatze.authorization.configuration.security;
 
 import com.kamegatze.authorization.configuration.security.http.filter.BearerTokenAuthenticationFilterWithRefreshToken;
+import com.kamegatze.authorization.repoitory.AuthorityRepository;
+import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.JwtService;
 import jakarta.servlet.Filter;
@@ -32,14 +34,18 @@ public class SecurityConfig {
     private final JwtIssuerValidator jwtIssuerValidator;
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final UsersAuthorityRepository usersAuthorityRepository;
+    private final AuthorityRepository authorityRepository;
 
     private Filter bearerTokenAuthenticationFilterWithRefreshToken() throws Exception {
         return new BearerTokenAuthenticationFilterWithRefreshToken(
                 authenticationManager(authenticationConfiguration),
                 jwtService,
                 jwtIssuerValidator,
-                usersRepository);
+                usersRepository,
+                usersAuthorityRepository,
+                authorityRepository
+                );
     }
 
     private DaoAuthenticationProvider authenticationProvider() {

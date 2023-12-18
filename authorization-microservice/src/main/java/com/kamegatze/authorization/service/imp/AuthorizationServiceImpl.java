@@ -103,42 +103,4 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .type(ETokenType.Bearer)
                 .build();
     }
-
-    @Override
-    public void refresh(HttpServletRequest request, HttpServletResponse response) throws RefreshTokenIsNullException, UserNotExistException, IOException {
-        final String token = Optional.of(
-                request.getHeader(
-                        ETypeTokenHeader.AuthorizationRefresh.name()
-                )
-        ).orElseThrow(() -> new RefreshTokenIsNullException("Token is not exist"));
-        OAuth2TokenValidatorResult result = jwtValidator.validate(
-                new Jwt(token,
-                        jwtService.getIssuedAt(token),
-                        jwtService.getExpiresAt(token),
-                        jwtService.getHeaders(token),
-                        jwtService.getClaims(token))
-        );
-        if (result.hasErrors()) {
-            throw new InvalidBearerTokenException("Current refresh token is invalid");
-        }
-        String login = jwtService.getLogin(token);
-        if(!usersRepository.existsByLogin(jwtService.getLogin(token))) {
-            throw new UserNotExistException("user with current login not exist");
-        }
-
-        UsersDetails usersDetails = new UsersDetails(usersRepository.findByLogin(login)
-                .orElseThrow());
-
-        String tokenAccess = jwtService.generateAccess(usersDetails);
-        String tokenRefresh = jwtService.generateRefresh(usersDetails);
-
-        new ObjectMapper().writeValue(
-                response.getOutputStream(),
-                JwtDto.builder()
-                        .refreshToken(tokenRefresh)
-                        .tokenAccess(tokenAccess)
-                        .type(ETokenType.Bearer)
-                        .build()
-        );
-    }
 }

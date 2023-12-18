@@ -54,12 +54,4 @@ public class AuthenticationController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
     }
-
-    @PostMapping("/refresh-token")
-    public void handleRefreshToken(HttpServletRequest request, HttpServletResponse response)
-            throws IOException,
-            RefreshTokenIsNullException,
-            UserNotExistException {
-        authorizationService.refresh(request, response);
-    }
 }

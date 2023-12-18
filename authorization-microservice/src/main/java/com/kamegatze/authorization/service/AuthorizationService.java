@@ -15,6 +15,4 @@ public interface AuthorizationService {
     public UsersDto signup(UsersDto usersDto) throws UsersExistException;
 
     public JwtDto signin(Login login);
-
-    public void refresh(HttpServletRequest request, HttpServletResponse response) throws RefreshTokenIsNullException, UserNotExistException, IOException;
 }

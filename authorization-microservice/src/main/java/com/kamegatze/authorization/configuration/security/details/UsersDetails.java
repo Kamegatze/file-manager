@@ -11,16 +11,15 @@ import java.util.List;
 
 public class UsersDetails implements UserDetails {
 
-    private Users users;
+    private final Users users;
 
     private final ModelMapper model = new ModelMapper();
 
     private final List<? extends GrantedAuthority> authorityList;
 
-    public UsersDetails(Users users) {
+    public UsersDetails(Users users, List<? extends GrantedAuthority> authorityList) {
         this.users = users;
-        this.authorityList = users.getAuthorities().stream()
-                .map(item -> new SimpleGrantedAuthority(item.getName().name())).toList();
+        this.authorityList = authorityList;
     }
 
     @Override

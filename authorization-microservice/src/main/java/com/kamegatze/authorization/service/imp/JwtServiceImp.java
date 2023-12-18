@@ -4,7 +4,7 @@ import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -33,12 +33,12 @@ public class JwtServiceImp implements JwtService {
     private Integer timeRefresh;
 
     @Override
-    public String generateAccess(UsersDetails usersDetails) {
+    public String generateAccess(UserDetails usersDetails) {
         return generateToken(usersDetails, timeAccess);
     }
 
     @Override
-    public String generateRefresh(UsersDetails usersDetails) {
+    public String generateRefresh(UserDetails usersDetails) {
         return generateToken(usersDetails, timeRefresh);
     }
 
@@ -68,7 +68,7 @@ public class JwtServiceImp implements JwtService {
     }
 
 
-    private String generateToken(UsersDetails usersDetails, Integer time) {
+    private String generateToken(UserDetails usersDetails, Integer time) {
         Instant now = Instant.now();
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer(issuer)
