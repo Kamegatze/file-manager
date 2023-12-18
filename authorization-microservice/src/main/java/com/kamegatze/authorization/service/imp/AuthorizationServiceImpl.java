@@ -1,14 +1,10 @@
 package com.kamegatze.authorization.service.imp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
-import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
-import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.model.Authority;
 import com.kamegatze.authorization.model.EAuthority;
@@ -19,8 +15,6 @@ import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
 import com.kamegatze.authorization.service.JwtService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -29,15 +23,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 
 
-import java.io.IOException;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -59,8 +47,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
-
-    private final JwtIssuerValidator jwtValidator;
 
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {

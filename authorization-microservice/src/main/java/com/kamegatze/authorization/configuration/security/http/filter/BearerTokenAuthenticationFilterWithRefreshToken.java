@@ -7,8 +7,6 @@ import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
-import com.kamegatze.authorization.repoitory.AuthorityRepository;
-import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.JwtService;
 import com.nimbusds.jwt.JWTParser;
@@ -38,20 +36,15 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
     private final JwtService jwtService;
     private final JwtIssuerValidator jwtValidator;
     private final UsersRepository usersRepository;
-    private final UsersAuthorityRepository usersAuthorityRepository;
-    private final AuthorityRepository authorityRepository;
     public BearerTokenAuthenticationFilterWithRefreshToken(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             JwtIssuerValidator jwtValidator,
-            UsersRepository usersRepository,
-            UsersAuthorityRepository usersAuthorityRepository, AuthorityRepository authorityRepository) {
+            UsersRepository usersRepository) {
         super(authenticationManager);
         this.jwtService = jwtService;
         this.jwtValidator = jwtValidator;
         this.usersRepository = usersRepository;
-        this.usersAuthorityRepository = usersAuthorityRepository;
-        this.authorityRepository = authorityRepository;
     }
 
     @Override
@@ -80,12 +73,12 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
                 }
             }
         }
-        super.doFilterInternal(request, response, filterChain);
+        filterChain.doFilter(request, response);
     }
 
 
     private void refresh(HttpServletRequest request, HttpServletResponse response) throws RefreshTokenIsNullException, UserNotExistException, IOException {
-        final String token = Optional.of(
+        final String token = Optional.ofNullable(
                 request.getHeader(
                         ETypeTokenHeader.AuthorizationRefresh.name()
                 )
@@ -105,7 +98,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
             throw new UserNotExistException("user with current login not exist");
         }
 
-        UsersDetailsService usersDetailsService = new UsersDetailsService(usersRepository, usersAuthorityRepository, authorityRepository);
+        UsersDetailsService usersDetailsService = new UsersDetailsService(usersRepository);
 
         UserDetails usersDetails = usersDetailsService.loadUserByUsername(login);
 

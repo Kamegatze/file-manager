@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/api/users/info")
+@RequestMapping("/api/users/info")
 public class InfoController {
 
     @GetMapping("/id")

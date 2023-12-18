@@ -1,9 +1,9 @@
 package com.kamegatze.authorization.service.imp;
 
-import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -70,11 +70,17 @@ public class JwtServiceImp implements JwtService {
 
     private String generateToken(UserDetails usersDetails, Integer time) {
         Instant now = Instant.now();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (GrantedAuthority authority : usersDetails.getAuthorities()) {
+           stringBuilder.append(authority.getAuthority()).append(" ");
+        }
+        String authorities = stringBuilder.toString();
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer(issuer)
                 .issuedAt(now)
                 .expiresAt(now.plus(time, ChronoUnit.MINUTES))
                 .subject(usersDetails.getUsername())
+                .claim("authority", authorities)
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();

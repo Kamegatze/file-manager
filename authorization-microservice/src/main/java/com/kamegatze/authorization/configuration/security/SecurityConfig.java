@@ -1,14 +1,14 @@
 package com.kamegatze.authorization.configuration.security;
 
 import com.kamegatze.authorization.configuration.security.http.filter.BearerTokenAuthenticationFilterWithRefreshToken;
-import com.kamegatze.authorization.repoitory.AuthorityRepository;
-import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
+import com.kamegatze.authorization.model.EAuthority;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.JwtService;
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -17,11 +17,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Collection;
+
 
 @Configuration
 @EnableWebSecurity
@@ -34,17 +40,14 @@ public class SecurityConfig {
     private final JwtIssuerValidator jwtIssuerValidator;
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UsersAuthorityRepository usersAuthorityRepository;
-    private final AuthorityRepository authorityRepository;
+
 
     private Filter bearerTokenAuthenticationFilterWithRefreshToken() throws Exception {
         return new BearerTokenAuthenticationFilterWithRefreshToken(
                 authenticationManager(authenticationConfiguration),
                 jwtService,
                 jwtIssuerValidator,
-                usersRepository,
-                usersAuthorityRepository,
-                authorityRepository
+                usersRepository
                 );
     }
 
@@ -60,24 +63,47 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+
+    private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authority");
+        return jwtGrantedAuthoritiesConverter;
+    }
+
+
+    private JwtAuthenticationConverter customJwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
+        return converter;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(bearerTokenAuthenticationFilterWithRefreshToken(), UsernamePasswordAuthenticationFilter.class)
+                .addFilter(bearerTokenAuthenticationFilterWithRefreshToken())
                 .authorizeHttpRequests(authorize ->
                     authorize
                             .requestMatchers("/api/auth/service/**").permitAll()
                             .requestMatchers("/api/users/info/**")
-                            .hasAnyAuthority("READ", "WRITE")
+                            .hasAnyAuthority(EAuthority.AUTHORITY_WRITE.name(),
+                                    EAuthority.AUTHORITY_READ.name())
                             .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(
+                        jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
+                                customJwtAuthenticationConverter())
+                        )
+                )
                 .authenticationProvider(authenticationProvider())
                 .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
 
-        return http.build();
+        SecurityFilterChain securityFilterChain = http.build();
+
+        System.out.println(securityFilterChain.getFilters());
+
+        return securityFilterChain;
     }
 }

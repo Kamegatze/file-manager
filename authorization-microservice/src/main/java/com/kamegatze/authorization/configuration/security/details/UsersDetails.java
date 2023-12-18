@@ -17,9 +17,10 @@ public class UsersDetails implements UserDetails {
 
     private final List<? extends GrantedAuthority> authorityList;
 
-    public UsersDetails(Users users, List<? extends GrantedAuthority> authorityList) {
+    public UsersDetails(Users users) {
         this.users = users;
-        this.authorityList = authorityList;
+        this.authorityList = users.getAuthorities()
+                .stream().map(item -> new SimpleGrantedAuthority(item.getName().name())).toList();;
     }
 
     @Override
