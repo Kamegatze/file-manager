@@ -100,10 +100,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
 
-        SecurityFilterChain securityFilterChain = http.build();
-
-        System.out.println(securityFilterChain.getFilters());
-
-        return securityFilterChain;
+        return http.build();
     }
 }
