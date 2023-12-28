@@ -14,6 +14,10 @@ spring:
     change-log: classpath:db/changelog.xml
     enabled: true
 
+  graphql:
+    graphiql:
+      enabled: true
+
 logging:
   level:
     org:

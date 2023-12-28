@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,6 +33,7 @@ import java.util.Collection;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
@@ -48,7 +50,7 @@ public class SecurityConfig {
                 jwtService,
                 jwtIssuerValidator,
                 usersRepository
-                );
+        );
     }
 
     private DaoAuthenticationProvider authenticationProvider() {
@@ -84,16 +86,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilter(bearerTokenAuthenticationFilterWithRefreshToken())
                 .authorizeHttpRequests(authorize ->
-                    authorize
-                            .requestMatchers("/api/auth/service/**").permitAll()
-                            .requestMatchers("/api/users/info/**")
-                            .hasAnyAuthority(EAuthority.AUTHORITY_WRITE.name(),
-                                    EAuthority.AUTHORITY_READ.name())
-                            .anyRequest().authenticated()
+                        authorize
+                                .requestMatchers("/api/auth/service/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(
-                        jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
-                                customJwtAuthenticationConverter())
+                                jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
+                                        customJwtAuthenticationConverter())
                         )
                 )
                 .authenticationProvider(authenticationProvider())
@@ -103,3 +102,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+

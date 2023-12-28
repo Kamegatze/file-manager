@@ -1,0 +1,20 @@
+type Query {
+    findAll: [Users]
+    findById(id: ID): Users
+}
+
+type Users {
+    id: ID!
+    login: String!
+    name: String!
+    authorities: [Authority]!
+}
+
+type Authority {
+    name: EAuthority
+}
+
+enum EAuthority {
+    AUTHORITY_READ
+    AUTHORITY_WRITE
+}
