@@ -1,5 +1,6 @@
 package com.kamegatze.authorization.configuration.security.cors;
 
+import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,12 @@ public class CorsConfiguration {
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowCredentials(true)
-                        .allowedOrigins("http://localhost:4200")
+                        .allowedOrigins("http://localhost:5173/")
                         .allowedHeaders(
                                 HttpHeaders.CONTENT_TYPE,
-                                HttpHeaders.ACCEPT
+                                HttpHeaders.ACCEPT,
+                                HttpHeaders.AUTHORIZATION,
+                                ETypeTokenHeader.AuthorizationRefresh.name()
                         )
                         .allowedMethods(
                                 HttpMethod.GET.name(),
