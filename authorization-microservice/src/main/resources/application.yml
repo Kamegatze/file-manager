@@ -30,5 +30,5 @@ rsa:
 
 app:
   name-application: authorization-file-manager
-  access-token: 1
+  access-token: 30
   refresh-token: 1440

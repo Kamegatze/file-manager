@@ -96,7 +96,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isAuthenticationUser(String token) throws ParseException {
-        if(token != null) {
+        if(!(token.isEmpty() || token.isBlank())) {
 
             long expiresAtToken = JWTParser.parse(token).getJWTClaimsSet().getExpirationTime().getTime();
             long now = new Date().getTime();
