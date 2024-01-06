@@ -15,6 +15,7 @@ import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
 import com.kamegatze.authorization.service.JwtService;
+import com.nimbusds.jwt.JWTParser;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -26,6 +27,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -88,5 +92,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .refreshToken(tokenRefresh)
                 .type(ETokenType.Bearer)
                 .build();
+    }
+
+    @Override
+    public Boolean isAuthenticationUser(String token) throws ParseException {
+        if(token != null) {
+
+            long expiresAtToken = JWTParser.parse(token).getJWTClaimsSet().getExpirationTime().getTime();
+            long now = new Date().getTime();
+            if(now <= expiresAtToken) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
     }
 }

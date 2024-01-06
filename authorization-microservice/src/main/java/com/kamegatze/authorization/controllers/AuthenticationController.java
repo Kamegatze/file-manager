@@ -10,13 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
+import java.text.ParseException;
 import java.util.Map;
 
 @RestController
@@ -48,5 +46,13 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
+    }
+
+    @GetMapping("/authentication")
+    public ResponseEntity<Boolean> handleIsAuthenticationUser(@RequestParam String token) throws ParseException {
+        Boolean isAuthentication = authorizationService.isAuthenticationUser(token);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(isAuthentication);
     }
 }
