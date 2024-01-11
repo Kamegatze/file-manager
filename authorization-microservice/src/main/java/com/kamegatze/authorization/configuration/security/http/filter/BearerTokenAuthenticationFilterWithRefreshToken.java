@@ -1,10 +1,6 @@
 package com.kamegatze.authorization.configuration.security.http.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
-import com.kamegatze.authorization.dto.ETokenType;
 import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.repoitory.UsersRepository;
@@ -14,9 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
@@ -66,7 +60,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
 
             if(timeNow >= timeEnd) {
                 try {
-                    refresh(request, response);
+                    refresh(request);
                     return;
                 } catch (RefreshTokenIsNullException | UserNotExistException e) {
                     throw new RuntimeException(e);
@@ -77,7 +71,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
     }
 
 
-    private void refresh(HttpServletRequest request, HttpServletResponse response) throws RefreshTokenIsNullException, UserNotExistException, IOException {
+    private void refresh(HttpServletRequest request) throws RefreshTokenIsNullException, UserNotExistException, IOException {
         final String token = Optional.ofNullable(
                 request.getHeader(
                         ETypeTokenHeader.AuthorizationRefresh.name()
@@ -93,26 +87,8 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
         if (result.hasErrors()) {
             throw new InvalidBearerTokenException("Current refresh token is invalid");
         }
-        String login = jwtService.getLogin(token);
         if(!usersRepository.existsByLogin(jwtService.getLogin(token))) {
             throw new UserNotExistException("user with current login not exist");
         }
-
-        UsersDetailsService usersDetailsService = new UsersDetailsService(usersRepository);
-
-        UserDetails usersDetails = usersDetailsService.loadUserByUsername(login);
-
-        String tokenAccess = jwtService.generateAccess(usersDetails);
-        String tokenRefresh = jwtService.generateRefresh(usersDetails);
-
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(
-                response.getOutputStream(),
-                JwtDto.builder()
-                        .refreshToken(tokenRefresh)
-                        .tokenAccess(tokenAccess)
-                        .type(ETokenType.Bearer)
-                        .build()
-        );
     }
 }

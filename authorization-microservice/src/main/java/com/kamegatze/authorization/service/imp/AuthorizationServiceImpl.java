@@ -1,10 +1,14 @@
 package com.kamegatze.authorization.service.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
+import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
 import com.kamegatze.authorization.dto.ETokenType;
+import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
+import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.model.Authority;
 import com.kamegatze.authorization.model.EAuthority;
@@ -15,7 +19,7 @@ import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
 import com.kamegatze.authorization.service.JwtService;
-import com.nimbusds.jwt.JWTParser;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -24,12 +28,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 
 
 import java.text.ParseException;
-import java.time.Instant;
-import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -51,6 +57,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
+
+    private final UsersDetailsService usersDetailsService;
+
+    private final JwtIssuerValidator jwtValidator;
 
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
@@ -95,15 +105,63 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public Boolean isAuthenticationUser(String token) throws ParseException {
-        if(!(token.isEmpty() || token.isBlank())) {
-
-            long expiresAtToken = JWTParser.parse(token).getJWTClaimsSet().getExpirationTime().getTime();
-            long now = new Date().getTime();
-            if(now <= expiresAtToken) {
-                return Boolean.TRUE;
-            }
+    public Boolean isAuthenticationUser(HttpServletRequest request) throws ParseException {
+        Optional<String> tokenAccessOptional = Optional.ofNullable(
+                request.getHeader(
+                        ETypeTokenHeader.Authorization.name()
+                )
+        );
+        if (tokenAccessOptional.isEmpty()) {
+            return Boolean.FALSE;
         }
-        return Boolean.FALSE;
+
+        String token = tokenAccessOptional.get().substring(7);
+        return tokenValid(token);
+    }
+
+    private Boolean tokenValid(String token) throws ParseException {
+        OAuth2TokenValidatorResult result = jwtValidator.validate(
+                new Jwt(token,
+                        jwtService.getIssuedAt(token),
+                        jwtService.getExpiresAt(token),
+                        jwtService.getHeaders(token),
+                        jwtService.getClaims(token))
+        );
+        if (result.hasErrors()) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public JwtDto authenticationViaRefreshToken(HttpServletRequest request)
+            throws RefreshTokenIsNullException, ParseException, InvalidBearerTokenException, UserNotExistException {
+        Optional<String> tokenRefreshOptional = Optional.ofNullable(
+                request.getHeader(
+                        ETypeTokenHeader.AuthorizationRefresh.name()
+                )
+        );
+
+        if (tokenRefreshOptional.isEmpty()) {
+            throw new RefreshTokenIsNullException("Refresh token is null");
+        }
+
+        String token = tokenRefreshOptional.get();
+
+        if (!tokenValid(token)) {
+            throw new InvalidBearerTokenException("Refresh token invalid");
+        }
+        String login = jwtService.getLogin(token);
+        if (!usersRepository.existsByLogin(login)) {
+            throw new UserNotExistException(String.format("User with login: [%s] not exist", login));
+        }
+
+        String accessToken = jwtService.generateAccess(usersDetailsService.loadUserByUsername(login));
+
+        return JwtDto.builder()
+                .refreshToken(token)
+                .tokenAccess(accessToken)
+                .type(ETokenType.Bearer)
+                .build();
     }
 }

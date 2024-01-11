@@ -7,10 +7,13 @@ import com.kamegatze.authorization.repoitory.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -34,4 +37,8 @@ public class InfoUsersController {
                 ));
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, String>> handleTest() {
+        return ResponseEntity.ok(Map.of("message", "Hello"));
+    }
 }

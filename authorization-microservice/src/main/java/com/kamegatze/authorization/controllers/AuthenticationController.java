@@ -4,12 +4,16 @@ import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
+import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -48,11 +52,20 @@ public class AuthenticationController {
                 .body(jwtDto);
     }
 
-    @GetMapping("/authentication")
-    public ResponseEntity<Boolean> handleIsAuthenticationUser(@RequestParam String token) throws ParseException {
-        Boolean isAuthentication = authorizationService.isAuthenticationUser(token);
+    @GetMapping("/is-authentication")
+    public ResponseEntity<Boolean> handleIsAuthenticationUser(HttpServletRequest request) throws ParseException {
+        Boolean isAuthentication = authorizationService.isAuthenticationUser(request);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(isAuthentication);
+    }
+
+    @GetMapping("/authentication")
+    public ResponseEntity<JwtDto> handleAuthenticationUserUseRefreshToken(HttpServletRequest request)
+            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException {
+        JwtDto jwtDto = authorizationService.authenticationViaRefreshToken(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jwtDto);
     }
 }
