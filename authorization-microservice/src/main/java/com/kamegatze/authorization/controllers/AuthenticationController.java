@@ -1,5 +1,6 @@
 package com.kamegatze.authorization.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.Response;
@@ -9,6 +10,7 @@ import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -61,11 +64,11 @@ public class AuthenticationController {
     }
 
     @GetMapping("/authentication")
-    public ResponseEntity<JwtDto> handleAuthenticationUserUseRefreshToken(HttpServletRequest request)
-            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException {
+    public void handleAuthenticationUserUseRefreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException, IOException {
         JwtDto jwtDto = authorizationService.authenticationViaRefreshToken(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(jwtDto);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        new ObjectMapper().writeValue(
+                response.getOutputStream(), jwtDto);
     }
 }
