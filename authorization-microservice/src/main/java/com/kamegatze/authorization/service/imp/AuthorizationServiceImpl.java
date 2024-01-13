@@ -31,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 
@@ -111,26 +112,35 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                         ETypeTokenHeader.Authorization.name()
                 )
         );
-        if (tokenAccessOptional.isEmpty()) {
+        Optional<String> refreshTokenOptional = Optional.ofNullable(
+                request.getHeader(
+                        ETypeTokenHeader.AuthorizationRefresh.name()
+                )
+        );
+        if (tokenAccessOptional.isEmpty() && refreshTokenOptional.isEmpty()) {
             return Boolean.FALSE;
         }
 
-        String token = tokenAccessOptional.get().substring(7);
-        return tokenValid(token);
+        String tokenRefresh = refreshTokenOptional.get();
+        return tokenValid(tokenRefresh);
     }
 
     private Boolean tokenValid(String token) throws ParseException {
-        OAuth2TokenValidatorResult result = jwtValidator.validate(
-                new Jwt(token,
-                        jwtService.getIssuedAt(token),
-                        jwtService.getExpiresAt(token),
-                        jwtService.getHeaders(token),
-                        jwtService.getClaims(token))
-        );
-        if (result.hasErrors()) {
+        try {
+            OAuth2TokenValidatorResult result = jwtValidator.validate(
+                    new Jwt(token,
+                            jwtService.getIssuedAt(token),
+                            jwtService.getExpiresAt(token),
+                            jwtService.getHeaders(token),
+                            jwtService.getClaims(token))
+            );
+            if (result.hasErrors()) {
+                return Boolean.FALSE;
+            }
+            return Boolean.TRUE;
+        } catch (JwtValidationException exception) {
             return Boolean.FALSE;
         }
-        return Boolean.TRUE;
     }
 
     @Override
