@@ -60,7 +60,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
 
             if(timeNow >= timeEnd) {
                 try {
-                    refresh(request);
+                    refresh(request, response, filterChain);
                     return;
                 } catch (RefreshTokenIsNullException | UserNotExistException e) {
                     throw new RuntimeException(e);
@@ -71,7 +71,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
     }
 
 
-    private void refresh(HttpServletRequest request) throws RefreshTokenIsNullException, UserNotExistException, IOException {
+    private void refresh(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws RefreshTokenIsNullException, UserNotExistException, IOException, ServletException {
         final String token = Optional.ofNullable(
                 request.getHeader(
                         ETypeTokenHeader.AuthorizationRefresh.name()
@@ -90,5 +90,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
         if(!usersRepository.existsByLogin(jwtService.getLogin(token))) {
             throw new UserNotExistException("user with current login not exist");
         }
+
+        filterChain.doFilter(request, response);
     }
 }
