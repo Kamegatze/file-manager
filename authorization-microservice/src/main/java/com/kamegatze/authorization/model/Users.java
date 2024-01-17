@@ -47,6 +47,9 @@ public class Users {
     @Column
     private String name;
 
+    @Column
+    private String email;
+
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "users_authority",
         joinColumns = @JoinColumn(name = "user_id"),

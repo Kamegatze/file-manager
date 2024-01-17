@@ -65,11 +65,21 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
-        Users users = model.map(usersDto, Users.class);
+        Users users = Users.builder()
+                .password(usersDto.getPassword())
+                .email(usersDto.getEmail())
+                .login(usersDto.getLogin())
+                .name(usersDto.getFirstName() + " " + usersDto.getLastName())
+                .build();
 
-        Optional<Users> usersFind = usersRepository.findByLogin(users.getLogin());
-        if(usersFind.isPresent()) {
+        Optional<Users> usersFindByLogin = usersRepository.findByLogin(users.getLogin());
+        if(usersFindByLogin.isPresent()) {
             throw new UsersExistException(String.format("user with login: %s exist", users.getLogin()));
+        }
+
+        Optional<Users> usersFindByEmail = usersRepository.findByEmail(users.getEmail());
+        if (usersFindByEmail.isPresent()) {
+            throw new UsersExistException(String.format("user with email: %s exist", users.getEmail()));
         }
 
         Authority authorityRead = authorityRepository.findByName(EAuthority.AUTHORITY_READ)
@@ -82,7 +92,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                         .usersId(users.getId())
                         .build());
 
-        return model.map(users, UsersDto.class);
+        String[] name = users.getName().split(" ");
+        return UsersDto.builder()
+                .id(users.getId())
+                .login(users.getLogin())
+                .email(users.getEmail())
+                .firstName(name[0])
+                .lastName(name[1])
+                .build();
     }
 
     @Override
