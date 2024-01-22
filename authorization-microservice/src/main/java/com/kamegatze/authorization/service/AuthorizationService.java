@@ -22,4 +22,6 @@ public interface AuthorizationService {
             throws RefreshTokenIsNullException, ParseException, InvalidBearerTokenException, UserNotExistException;
 
     Boolean isExistUser(String loginOrEmail);
+
+    void sendCode(String loginOrEmail);
 }

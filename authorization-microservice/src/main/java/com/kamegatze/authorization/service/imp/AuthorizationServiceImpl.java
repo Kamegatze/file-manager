@@ -64,6 +64,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private final JwtIssuerValidator jwtValidator;
 
+    private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
@@ -195,11 +197,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isExistUser(String loginOrEmail) {
-        final String emailRegExp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        boolean isEmail = Pattern.compile(emailRegExp).matcher(loginOrEmail).matches();
+        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
         }
         return usersRepository.existsByLogin(loginOrEmail);
+    }
+
+    @Override
+    public void sendCode(String loginOrEmail) {
+
     }
 }
