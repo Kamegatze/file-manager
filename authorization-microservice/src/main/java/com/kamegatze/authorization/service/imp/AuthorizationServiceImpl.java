@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -190,5 +191,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .tokenAccess(accessToken)
                 .type(ETokenType.Bearer)
                 .build();
+    }
+
+    @Override
+    public Boolean isExistUser(String loginOrEmail) {
+        final String emailRegExp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+        boolean isEmail = Pattern.compile(emailRegExp).matcher(loginOrEmail).matches();
+        if (isEmail) {
+            return usersRepository.existsByEmail(loginOrEmail);
+        }
+        return usersRepository.existsByLogin(loginOrEmail);
     }
 }

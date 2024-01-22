@@ -71,4 +71,12 @@ public class AuthenticationController {
         new ObjectMapper().writeValue(
                 response.getOutputStream(), jwtDto);
     }
+
+    @GetMapping("/is-exist-user")
+    public ResponseEntity<Boolean> handleChangePassword(@RequestParam String loginOrEmail) {
+        Boolean isExistUser = authorizationService.isExistUser(loginOrEmail);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(isExistUser);
+    }
 }

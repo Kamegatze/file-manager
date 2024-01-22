@@ -20,4 +20,6 @@ public interface AuthorizationService {
 
     JwtDto authenticationViaRefreshToken(HttpServletRequest request)
             throws RefreshTokenIsNullException, ParseException, InvalidBearerTokenException, UserNotExistException;
+
+    Boolean isExistUser(String loginOrEmail);
 }
