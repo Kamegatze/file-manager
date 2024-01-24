@@ -6,10 +6,12 @@ import com.kamegatze.authorization.dto.UsersDto;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 
 import java.text.ParseException;
+import java.util.concurrent.ExecutionException;
 
 public interface AuthorizationService {
     public UsersDto signup(UsersDto usersDto) throws UsersExistException;
@@ -23,5 +25,5 @@ public interface AuthorizationService {
 
     Boolean isExistUser(String loginOrEmail);
 
-    void sendCode(String loginOrEmail);
+    void sendCode(String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException;
 }

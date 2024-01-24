@@ -27,6 +27,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
@@ -78,28 +79,15 @@ public class AuthenticationController {
     }
 
     @GetMapping("/change-password")
-    public ResponseEntity<Boolean> handleChangePassword(@RequestParam String loginOrEmail) {
-        Boolean isExistUser = authorizationService.isExistUser(loginOrEmail);
-        if (isExistUser) {
-            authorizationService.sendCode(loginOrEmail);
-        }
+    public ResponseEntity<Response> handleChangePassword(@RequestParam String loginOrEmail)
+            throws ExecutionException, InterruptedException, MessagingException {
+        authorizationService.sendCode(loginOrEmail);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(isExistUser);
-    }
-
-    @PostMapping("/send-email")
-    public ResponseEntity<?> handleSendEmail() throws MessagingException {
-        Context context = new Context();
-        context.setVariable("name", "Aleksey");
-        String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
-        emailService.sendHtmlMessage("aleksi.aleksi2014@yandex.ru", "Check", htmlBody);
-        Response response = Response.builder()
-                .returnCode(200)
-                .message("Message send")
-                .build();
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response);
+                .body(Response.builder()
+                        .returnCode(200)
+                        .message("Go to your mailbox to recover " +
+                                "your password")
+                        .build());
     }
 }

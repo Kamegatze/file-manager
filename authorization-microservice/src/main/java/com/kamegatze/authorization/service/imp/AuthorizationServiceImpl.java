@@ -18,11 +18,16 @@ import com.kamegatze.authorization.repoitory.AuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
+import com.kamegatze.authorization.service.EmailService;
 import com.kamegatze.authorization.service.JwtService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,11 +39,21 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.text.ParseException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Service
@@ -47,24 +62,21 @@ import java.util.regex.Pattern;
 public class AuthorizationServiceImpl implements AuthorizationService {
 
     private final UsersRepository usersRepository;
-
     private final AuthorityRepository authorityRepository;
-
     private final UsersAuthorityRepository usersAuthorityRepository;
-
     private final ModelMapper model;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final JwtService jwtService;
-
     private final UsersDetailsService usersDetailsService;
-
     private final JwtIssuerValidator jwtValidator;
+    private final SpringTemplateEngine templateEngine;
+    private final EmailService emailService;
 
     private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+
+    @Value("${url.change-password}")
+    private String urlChangePassword;
 
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
@@ -76,7 +88,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .build();
 
         Optional<Users> usersFindByLogin = usersRepository.findByLogin(users.getLogin());
-        if(usersFindByLogin.isPresent()) {
+        if (usersFindByLogin.isPresent()) {
             throw new UsersExistException(String.format("user with login: %s exist", users.getLogin()));
         }
 
@@ -91,9 +103,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         users.setPassword(passwordEncoder.encode(users.getPassword()));
         users = usersRepository.save(users);
         usersAuthorityRepository.save(UsersAuthority.builder()
-                        .authorityId(authorityRead.getId())
-                        .usersId(users.getId())
-                        .build());
+                .authorityId(authorityRead.getId())
+                .usersId(users.getId())
+                .build());
 
         String[] name = users.getName().split(" ");
         return UsersDto.builder()
@@ -205,7 +217,40 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void sendCode(String loginOrEmail) {
+    public void sendCode(String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException {
+        Context context = new Context();
+        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
+        Users user;
+        if (isEmail) {
+            user = usersRepository.findByEmail(loginOrEmail)
+                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by email: [%s]", loginOrEmail)));
+        } else {
+            user = usersRepository.findByLogin(loginOrEmail)
+                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by login: [%s]", loginOrEmail)));
+        }
+        String tokenUUID = UUID.randomUUID().toString();
+        String link = String.format("%s?token=%s", urlChangePassword, tokenUUID);
+        user.setRecoveryCode(tokenUUID);
+        context.setVariable("link", link);
+        String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
+        emailService.sendHtmlMessage(user.getEmail(), "File-Manager. Смена пароля", htmlBody);
+        asyncRemoveRecoveryCode(30, tokenUUID);
+    }
 
+    private void asyncRemoveRecoveryCode(Integer minute, String code) throws ExecutionException, InterruptedException {
+        CompletableFuture<Void> deleteCode = CompletableFuture.runAsync(() -> {
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService.schedule(() -> {
+                removeRecoveryCode(code);
+            }, minute, TimeUnit.MINUTES);
+        });
+        deleteCode.get();
+    }
+
+    private void removeRecoveryCode(String code) {
+        Users user = usersRepository.findByRecoveryCode(code)
+                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", code)));
+        user.setRecoveryCode("");
+        usersRepository.save(user);
     }
 }
