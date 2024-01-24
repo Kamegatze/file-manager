@@ -9,6 +9,8 @@ import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
+import com.kamegatze.authorization.service.EmailService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.io.IOException;
@@ -30,7 +34,8 @@ import java.util.Map;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
-
+    private final SpringTemplateEngine templateEngine;
+    private final EmailService emailService;
     @PostMapping("/signup")
     public ResponseEntity<Response> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri) throws UsersExistException {
 
@@ -81,5 +86,20 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(isExistUser);
+    }
+
+    @PostMapping("/send-email")
+    public ResponseEntity<?> handleSendEmail() throws MessagingException {
+        Context context = new Context();
+        context.setVariable("name", "Aleksey");
+        String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
+        emailService.sendHtmlMessage("aleksi.aleksi2014@yandex.ru", "Check", htmlBody);
+        Response response = Response.builder()
+                .returnCode(200)
+                .message("Message send")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 }
