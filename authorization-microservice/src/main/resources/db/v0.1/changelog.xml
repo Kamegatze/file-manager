@@ -8,4 +8,5 @@
     <include file="2023-12-11-create-table-many-to-many-between-users-and-authority.xml" relativeToChangelogFile="true"/>
     <include file="2023-12-11-addition-authority-data.xml" relativeToChangelogFile="true"/>
     <include file="2024-01-17-add-column-email-in-table-users.xml" relativeToChangelogFile="true"/>
+    <include file="2024-01-24-add-column-recovery_code-in-table-users.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
