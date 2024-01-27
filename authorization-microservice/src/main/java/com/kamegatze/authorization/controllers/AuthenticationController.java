@@ -1,40 +1,28 @@
 package com.kamegatze.authorization.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.dto.UsersDto;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
-import com.kamegatze.authorization.service.EmailService;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +30,7 @@ import java.util.concurrent.ExecutionException;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
-    private final SpringTemplateEngine templateEngine;
-    private final EmailService emailService;
+
     @PostMapping("/signup")
     public ResponseEntity<Response> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri) throws UsersExistException {
 
@@ -85,27 +72,11 @@ public class AuthenticationController {
                 response.getOutputStream(), jwtDto);
     }
 
-    @PostMapping("/send-email-change-password")
-    public ResponseEntity<Response> handleSendEmailChangePassword(@RequestParam String loginOrEmail)
-            throws ExecutionException, InterruptedException, MessagingException {
-        authorizationService.sendCode(loginOrEmail);
+    @GetMapping("/is-exist-user")
+    public ResponseEntity<Boolean> handleChangePassword(@RequestParam String loginOrEmail) {
+        Boolean isExistUser = authorizationService.isExistUser(loginOrEmail);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(200)
-                        .message("Go to your mailbox to recover " +
-                                "your password")
-                        .build());
-    }
-
-    @PostMapping("/change-password")
-    public ResponseEntity<Response> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
-        authorizationService.changePassword(changePasswordDto);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .message("Your password change")
-                        .returnCode(200)
-                        .build());
+                .body(isExistUser);
     }
 }

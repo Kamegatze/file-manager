@@ -1,16 +1,4 @@
 spring:
-  mail:
-    host: <your host email server>
-    port: 587
-    username: <your username>
-    password: <your password>
-    properties:
-      mail:
-        smtp:
-          auth: true
-            starttls:
-              enable: true
-
   datasource:
     driver-class-name: org.postgresql.Driver
     username: postgres
@@ -34,7 +22,7 @@ logging:
   level:
     org:
       springframework:
-        security: info
+        security: trace
 
 rsa:
   private-key: classpath:certs/private.pem
