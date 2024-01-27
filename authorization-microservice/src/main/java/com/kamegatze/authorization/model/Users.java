@@ -50,6 +50,9 @@ public class Users {
     @Column
     private String email;
 
+    @Column
+    private String recoveryCode;
+
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "users_authority",
         joinColumns = @JoinColumn(name = "user_id"),

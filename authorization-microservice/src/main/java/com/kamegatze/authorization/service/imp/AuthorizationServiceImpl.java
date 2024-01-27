@@ -2,11 +2,13 @@ package com.kamegatze.authorization.service.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
+import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.ETokenType;
 import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -18,11 +20,18 @@ import com.kamegatze.authorization.repoitory.AuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.service.AuthorizationService;
+import com.kamegatze.authorization.service.EmailService;
 import com.kamegatze.authorization.service.JwtService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,38 +43,48 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
+import javax.validation.Valid;
 import java.text.ParseException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Service
+@Validated
 @Transactional
 @RequiredArgsConstructor
 public class AuthorizationServiceImpl implements AuthorizationService {
 
     private final UsersRepository usersRepository;
-
     private final AuthorityRepository authorityRepository;
-
     private final UsersAuthorityRepository usersAuthorityRepository;
-
     private final ModelMapper model;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final JwtService jwtService;
-
     private final UsersDetailsService usersDetailsService;
-
     private final JwtIssuerValidator jwtValidator;
+    private final SpringTemplateEngine templateEngine;
+    private final EmailService emailService;
+
+    private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+
+    @Value("${url.change-password}")
+    private String urlChangePassword;
 
     @Override
-    public UsersDto signup(UsersDto usersDto) throws UsersExistException {
+    public UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
                 .password(usersDto.getPassword())
                 .email(usersDto.getEmail())
@@ -74,7 +93,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .build();
 
         Optional<Users> usersFindByLogin = usersRepository.findByLogin(users.getLogin());
-        if(usersFindByLogin.isPresent()) {
+        if (usersFindByLogin.isPresent()) {
             throw new UsersExistException(String.format("user with login: %s exist", users.getLogin()));
         }
 
@@ -89,9 +108,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         users.setPassword(passwordEncoder.encode(users.getPassword()));
         users = usersRepository.save(users);
         usersAuthorityRepository.save(UsersAuthority.builder()
-                        .authorityId(authorityRead.getId())
-                        .usersId(users.getId())
-                        .build());
+                .authorityId(authorityRead.getId())
+                .usersId(users.getId())
+                .build());
 
         String[] name = users.getName().split(" ");
         return UsersDto.builder()
@@ -104,7 +123,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public JwtDto signin(Login login) {
+    public JwtDto signin(@Valid Login login) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
@@ -194,12 +213,70 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public Boolean isExistUser(String loginOrEmail) {
-        final String emailRegExp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        boolean isEmail = Pattern.compile(emailRegExp).matcher(loginOrEmail).matches();
+    public Boolean isExistUser( @NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
+                                    String loginOrEmail) {
+        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
         }
         return usersRepository.existsByLogin(loginOrEmail);
+    }
+
+    @Override
+    public void sendCode( @NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
+                              String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException {
+        Context context = new Context();
+        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
+        Users user;
+        if (isEmail) {
+            user = usersRepository.findByEmail(loginOrEmail)
+                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by email: [%s]", loginOrEmail)));
+        } else {
+            user = usersRepository.findByLogin(loginOrEmail)
+                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by login: [%s]", loginOrEmail)));
+        }
+        String tokenUUID = UUID.randomUUID().toString();
+        String link = String.format("%s?token=%s", urlChangePassword, tokenUUID);
+        user.setRecoveryCode(tokenUUID);
+        context.setVariable("link", link);
+        String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
+        emailService.sendHtmlMessage(user.getEmail(), "File-Manager. Смена пароля", htmlBody);
+        asyncRemoveRecoveryCode(30, tokenUUID);
+    }
+
+    @Override
+    public void changePassword(@Valid ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
+        Users user = usersRepository.findByRecoveryCode(changePasswordDto.getRecoveryCode())
+                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", changePasswordDto.getRecoveryCode())));
+        asyncRemoveRecoveryCode(0, changePasswordDto.getRecoveryCode());
+        if (!changePasswordDto.getPassword().equals(changePasswordDto.getPasswordRetry())) {
+            throw new NotEqualsPasswordException("Field password and passwordRetry not equals");
+        }
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getPassword()));
+    }
+
+    private void asyncRemoveRecoveryCode(Integer minute, @jakarta.validation.constraints.Pattern(
+                regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                message = "Your recovery code need is uuid"
+            )
+            String code) throws ExecutionException, InterruptedException {
+        CompletableFuture<Void> deleteCode = CompletableFuture.runAsync(() -> {
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService.schedule(() -> {
+                removeRecoveryCode(code);
+            }, minute, TimeUnit.MINUTES);
+        });
+        deleteCode.get();
+    }
+
+    private void removeRecoveryCode(@jakarta.validation.constraints.Pattern(
+                    regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                    message = "Your recovery code need is uuid"
+                    )
+                    String code) {
+        Users user = usersRepository.findByRecoveryCode(code)
+                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", code)));
+        user.setRecoveryCode("");
+        usersRepository.save(user);
     }
 }
