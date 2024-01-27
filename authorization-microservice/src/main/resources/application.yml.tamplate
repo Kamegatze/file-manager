@@ -44,3 +44,12 @@ app:
   name-application: authorization-file-manager
   access-token: 30
   refresh-token: 1440
+
+mail:
+  path: authorization-microservice/src/main/resources/templates/email/
+  suffix: .html
+  template-mode: HTML
+  encoding: UTF-8
+
+url:
+  change-password: http://localhost:4200/authentication/change-password
