@@ -10,11 +10,16 @@ import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.validation.annotation.Validated;
 
 import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
-
+@Validated
 public interface AuthorizationService {
     public UsersDto signup(UsersDto usersDto) throws UsersExistException;
 
@@ -25,9 +30,11 @@ public interface AuthorizationService {
     JwtDto authenticationViaRefreshToken(HttpServletRequest request)
             throws RefreshTokenIsNullException, ParseException, InvalidBearerTokenException, UserNotExistException;
 
-    Boolean isExistUser(String loginOrEmail);
+    Boolean isExistUser(@NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
+                        String loginOrEmail);
 
-    void sendCode(String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException;
+    void sendCode(@NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
+                  String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException;
 
     void changePassword(ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException;
 }

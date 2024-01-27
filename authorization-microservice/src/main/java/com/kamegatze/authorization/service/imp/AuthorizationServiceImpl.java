@@ -213,8 +213,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public Boolean isExistUser( @NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
-                                    String loginOrEmail) {
+    public Boolean isExistUser(String loginOrEmail) {
         boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
@@ -223,8 +222,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void sendCode( @NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
-                              String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException {
+    public void sendCode(String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException {
         Context context = new Context();
         boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         Users user;
