@@ -80,7 +80,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private String urlChangePassword;
 
     @Override
-    public UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException {
+    public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
                 .password(usersDto.getPassword())
                 .email(usersDto.getEmail())
@@ -119,7 +119,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public JwtDto signin(@Valid Login login) {
+    public JwtDto signin(Login login) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
@@ -239,7 +239,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void changePassword(@Valid ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
+    public void changePassword(ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
         Users user = usersRepository.findByRecoveryCode(changePasswordDto.getRecoveryCode())
                 .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", changePasswordDto.getRecoveryCode())));
         asyncRemoveRecoveryCode(0, changePasswordDto.getRecoveryCode());
