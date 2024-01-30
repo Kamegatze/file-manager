@@ -14,8 +14,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 
 import java.io.IOException;
@@ -62,7 +64,7 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
                 try {
                     refresh(request, response, filterChain);
                     return;
-                } catch (RefreshTokenIsNullException | UserNotExistException e) {
+                } catch (JwtValidationException | RefreshTokenIsNullException | UserNotExistException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -71,7 +73,8 @@ public class BearerTokenAuthenticationFilterWithRefreshToken
     }
 
 
-    private void refresh(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws RefreshTokenIsNullException, UserNotExistException, IOException, ServletException {
+    private void refresh(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws JwtValidationException, RefreshTokenIsNullException, UserNotExistException, IOException, ServletException {
         final String token = Optional.ofNullable(
                 request.getHeader(
                         ETypeTokenHeader.AuthorizationRefresh.name()

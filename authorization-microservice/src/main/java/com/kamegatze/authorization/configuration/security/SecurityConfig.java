@@ -1,5 +1,6 @@
 package com.kamegatze.authorization.configuration.security;
 
+import com.kamegatze.authorization.configuration.security.http.entry.point.ExceptionEntryPoint;
 import com.kamegatze.authorization.configuration.security.http.filter.BearerTokenAuthenticationFilterWithRefreshToken;
 import com.kamegatze.authorization.model.EAuthority;
 import com.kamegatze.authorization.repoitory.UsersRepository;
@@ -26,6 +27,7 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collection;
 
@@ -35,7 +37,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
-
+    private final ExceptionEntryPoint exceptionEntryPoint;
     private final UserDetailsService userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtService jwtService;
@@ -85,6 +87,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilter(bearerTokenAuthenticationFilterWithRefreshToken())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPoint))
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers("/api/auth/service/**").permitAll()
