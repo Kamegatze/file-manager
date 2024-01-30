@@ -65,7 +65,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final UsersRepository usersRepository;
     private final AuthorityRepository authorityRepository;
     private final UsersAuthorityRepository usersAuthorityRepository;
-    private final ModelMapper model;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -224,10 +223,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Users user;
         if (isEmail) {
             user = usersRepository.findByEmail(loginOrEmail)
-                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by email: [%s]", loginOrEmail)));
+                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by email: [%s]", loginOrEmail)));
         } else {
             user = usersRepository.findByLogin(loginOrEmail)
-                    .orElseThrow(() -> new NoSuchElementException(String.format("Not found user by login: [%s]", loginOrEmail)));
+                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by login: [%s]", loginOrEmail)));
         }
         String tokenUUID = UUID.randomUUID().toString();
         String link = String.format("%s?token=%s", urlChangePassword, tokenUUID);
@@ -269,7 +268,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                     )
                     String code) {
         Users user = usersRepository.findByRecoveryCode(code)
-                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", code)));
+                .orElseThrow(() -> new UserNotExistException(String.format("User not found by recovery code: %s", code)));
         user.setRecoveryCode("");
         usersRepository.save(user);
     }
