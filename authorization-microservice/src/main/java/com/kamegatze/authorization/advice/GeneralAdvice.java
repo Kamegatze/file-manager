@@ -14,16 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GeneralAdvice {
-    @ExceptionHandler({BadCredentialsException.class})
-    public ResponseEntity<Response> handleBadCredentialsException(Exception e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.UNAUTHORIZED.value())
-                        .message(e.getMessage())
-                        .build());
-    }
-
     @ExceptionHandler({AuthenticationException.class})
     public ResponseEntity<Response> handleAuthenticationException(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
