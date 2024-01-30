@@ -11,26 +11,18 @@ import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.service.AuthorizationService;
-import com.kamegatze.authorization.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
@@ -42,8 +34,6 @@ import java.util.concurrent.ExecutionException;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
-    private final SpringTemplateEngine templateEngine;
-    private final EmailService emailService;
     @PostMapping("/signup")
     public ResponseEntity<Response> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri) throws UsersExistException {
 
