@@ -1,12 +1,13 @@
 type Query {
     findAll: [Users]
-    findById(id: ID): Users
+    findByLogin(login: String): Users
 }
 
 type Users {
     id: ID!
     login: String!
     name: String!
+    email: String!
     authorities: [Authority]!
 }
 

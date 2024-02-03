@@ -6,6 +6,7 @@ import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
@@ -26,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
@@ -77,7 +77,7 @@ public class AuthenticationController {
 
     @PostMapping("/send-email-change-password")
     public ResponseEntity<Response> handleSendEmailChangePassword(@RequestParam String loginOrEmail)
-            throws ExecutionException, InterruptedException, MessagingException {
+            throws MessagingException {
         authorizationService.sendCode(loginOrEmail);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +89,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Response> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
+    public ResponseEntity<Response> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto)
+            throws NotEqualsPasswordException, EqualsPasswordException {
         authorizationService.changePassword(changePasswordDto);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)

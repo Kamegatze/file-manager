@@ -4,6 +4,7 @@ import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
@@ -35,7 +36,7 @@ public interface AuthorizationService {
                         String loginOrEmail);
 
     void sendCode(@NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
-                  String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException;
+                  String loginOrEmail) throws MessagingException;
 
-    void changePassword(@Valid ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException;
+    void changePassword(@Valid ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException;
 }

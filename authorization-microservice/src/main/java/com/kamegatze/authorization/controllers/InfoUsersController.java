@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 
 @Controller
@@ -25,15 +24,16 @@ public class InfoUsersController {
     private final UsersRepository usersRepository;
 
     @QueryMapping
+    @Secured({AuthorityConstant.AUTHORITY_WRITE})
     public List<Users> findAll() {
         return usersRepository.findAll();
     }
 
     @QueryMapping
-    public Users findById(@Argument UUID id) throws UserNotExistException {
-        return usersRepository.findById(id)
+    public Users findByLogin(@Argument String login) throws UserNotExistException {
+        return usersRepository.findByLogin(login)
                 .orElseThrow(() -> new UserNotExistException(
-                        String.format("User not exist with id: %s", id)
+                        String.format("User not exist with login: %s", login)
                 ));
     }
 

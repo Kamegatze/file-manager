@@ -2,9 +2,11 @@ package com.kamegatze.authorization.advice;
 
 import com.kamegatze.authorization.controllers.AuthenticationController;
 import com.kamegatze.authorization.dto.Response;
+import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
+import com.kamegatze.authorization.exception.UsersExistException;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -74,5 +76,29 @@ public class AuthenticationAdvice {
                         .returnCode(HttpStatus.BAD_REQUEST.value())
                         .message(e.getMessage())
                         .build());
+    }
+
+    @ExceptionHandler({UsersExistException.class})
+    public ResponseEntity<Response> handleUsersExistException(Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    Response.builder()
+                            .message(e.getMessage())
+                            .returnCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+                );
+    }
+
+    @ExceptionHandler({EqualsPasswordException.class})
+    public ResponseEntity<Response> handleEqualsPasswordException(Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                        Response.builder()
+                                .message(e.getMessage())
+                                .returnCode(HttpStatus.BAD_REQUEST.value())
+                                .build()
+                );
     }
 }

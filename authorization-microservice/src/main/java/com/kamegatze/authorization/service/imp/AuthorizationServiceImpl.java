@@ -26,8 +26,8 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,17 +44,15 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
-import javax.validation.Valid;
 import java.text.ParseException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import com.kamegatze.authorization.exception.EqualsPasswordException;
 
 @Service
 @Validated
@@ -89,12 +87,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         Optional<Users> usersFindByLogin = usersRepository.findByLogin(users.getLogin());
         if (usersFindByLogin.isPresent()) {
-            throw new UsersExistException(String.format("user with login: %s exist", users.getLogin()));
+            throw new UsersExistException(String.format("User with login: \"%s\" exist", users.getLogin()));
         }
 
         Optional<Users> usersFindByEmail = usersRepository.findByEmail(users.getEmail());
         if (usersFindByEmail.isPresent()) {
-            throw new UsersExistException(String.format("user with email: %s exist", users.getEmail()));
+            throw new UsersExistException(String.format("User with email: \"%s\" exist", users.getEmail()));
         }
 
         Authority authorityRead = authorityRepository.findByName(EAuthority.AUTHORITY_READ)
@@ -217,59 +215,52 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void sendCode(String loginOrEmail) throws ExecutionException, InterruptedException, MessagingException {
+    public void sendCode(String loginOrEmail) throws MessagingException {
         Context context = new Context();
         boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         Users user;
         if (isEmail) {
             user = usersRepository.findByEmail(loginOrEmail)
-                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by email: [%s]", loginOrEmail)));
+                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by email: \"%s\"", loginOrEmail)));
         } else {
             user = usersRepository.findByLogin(loginOrEmail)
-                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by login: [%s]", loginOrEmail)));
+                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by login: \"%s\"", loginOrEmail)));
         }
         String tokenUUID = UUID.randomUUID().toString();
         String link = String.format("%s?token=%s", urlChangePassword, tokenUUID);
         user.setRecoveryCode(tokenUUID);
+        usersRepository.save(user);
         context.setVariable("link", link);
         String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
         emailService.sendHtmlMessage(user.getEmail(), "File-Manager. Смена пароля", htmlBody);
-        asyncRemoveRecoveryCode(30, tokenUUID);
+        asyncRemoveRecoveryCode(5, user);
     }
 
     @Override
-    public void changePassword(ChangePasswordDto changePasswordDto) throws ExecutionException, InterruptedException, NotEqualsPasswordException {
+    public void changePassword(ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException {
         Users user = usersRepository.findByRecoveryCode(changePasswordDto.getRecoveryCode())
-                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: %s", changePasswordDto.getRecoveryCode())));
-        asyncRemoveRecoveryCode(0, changePasswordDto.getRecoveryCode());
+                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: \"%s\"", changePasswordDto.getRecoveryCode())));
         if (!changePasswordDto.getPassword().equals(changePasswordDto.getPasswordRetry())) {
             throw new NotEqualsPasswordException("Field password and passwordRetry not equals");
         }
-        user.setPassword(passwordEncoder.encode(changePasswordDto.getPassword()));
-    }
-
-    private void asyncRemoveRecoveryCode(Integer minute, @jakarta.validation.constraints.Pattern(
-                regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
-                message = "Your recovery code need is uuid"
-            )
-            String code) throws ExecutionException, InterruptedException {
-        CompletableFuture<Void> deleteCode = CompletableFuture.runAsync(() -> {
-            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-            executorService.schedule(() -> {
-                removeRecoveryCode(code);
-            }, minute, TimeUnit.MINUTES);
-        });
-        deleteCode.get();
-    }
-
-    private void removeRecoveryCode(@jakarta.validation.constraints.Pattern(
-                    regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
-                    message = "Your recovery code need is uuid"
-                    )
-                    String code) {
-        Users user = usersRepository.findByRecoveryCode(code)
-                .orElseThrow(() -> new UserNotExistException(String.format("User not found by recovery code: %s", code)));
+        if(user.getPassword().equals(passwordEncoder.encode(changePasswordDto.getPassword()))) {
+            throw new EqualsPasswordException("Input other password. Current password equals previous password");
+        }
         user.setRecoveryCode("");
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getPassword()));
         usersRepository.save(user);
+    }
+
+    @Async
+    protected void asyncRemoveRecoveryCode(Integer minute, Users users) {
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.schedule(() -> {
+            removeRecoveryCode(users);
+        }, minute, TimeUnit.MINUTES);
+    }
+
+    private void removeRecoveryCode(Users users) {
+        users.setRecoveryCode("");
+        usersRepository.save(users);
     }
 }
