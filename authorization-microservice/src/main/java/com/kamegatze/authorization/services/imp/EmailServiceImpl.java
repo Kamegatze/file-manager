@@ -1,6 +1,6 @@
-package com.kamegatze.authorization.service.imp;
+package com.kamegatze.authorization.services.imp;
 
-import com.kamegatze.authorization.service.EmailService;
+import com.kamegatze.authorization.services.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;

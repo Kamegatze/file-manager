@@ -1,4 +1,4 @@
-package com.kamegatze.authorization.service;
+package com.kamegatze.authorization.services;
 
 import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.JwtDto;
@@ -20,7 +20,7 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.validation.annotation.Validated;
 
 import java.text.ParseException;
-import java.util.concurrent.ExecutionException;
+
 @Validated
 public interface AuthorizationService {
     public UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException;

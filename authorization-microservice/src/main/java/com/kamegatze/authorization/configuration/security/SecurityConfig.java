@@ -4,7 +4,7 @@ import com.kamegatze.authorization.configuration.security.http.entry.point.Excep
 import com.kamegatze.authorization.configuration.security.http.filter.BearerTokenAuthenticationFilterWithRefreshToken;
 import com.kamegatze.authorization.model.EAuthority;
 import com.kamegatze.authorization.repoitory.UsersRepository;
-import com.kamegatze.authorization.service.JwtService;
+import com.kamegatze.authorization.services.JwtService;
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +27,6 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collection;
 

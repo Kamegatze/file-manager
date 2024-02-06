@@ -1,4 +1,4 @@
-package com.kamegatze.authorization.service.imp;
+package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
@@ -19,9 +19,9 @@ import com.kamegatze.authorization.model.UsersAuthority;
 import com.kamegatze.authorization.repoitory.AuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
-import com.kamegatze.authorization.service.AuthorizationService;
-import com.kamegatze.authorization.service.EmailService;
-import com.kamegatze.authorization.service.JwtService;
+import com.kamegatze.authorization.services.AuthorizationService;
+import com.kamegatze.authorization.services.EmailService;
+import com.kamegatze.authorization.services.JwtService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;

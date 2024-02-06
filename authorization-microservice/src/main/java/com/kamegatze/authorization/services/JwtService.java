@@ -1,4 +1,4 @@
-package com.kamegatze.authorization.service;
+package com.kamegatze.authorization.services;
 
 import org.springframework.security.core.userdetails.UserDetails;
 

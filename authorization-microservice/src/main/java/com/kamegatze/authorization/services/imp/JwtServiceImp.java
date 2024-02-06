@@ -1,6 +1,6 @@
-package com.kamegatze.authorization.service.imp;
+package com.kamegatze.authorization.services.imp;
 
-import com.kamegatze.authorization.service.JwtService;
+import com.kamegatze.authorization.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;

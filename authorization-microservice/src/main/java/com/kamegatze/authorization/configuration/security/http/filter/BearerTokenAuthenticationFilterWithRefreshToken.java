@@ -4,7 +4,7 @@ import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.repoitory.UsersRepository;
-import com.kamegatze.authorization.service.JwtService;
+import com.kamegatze.authorization.services.JwtService;
 import com.nimbusds.jwt.JWTParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.kamegatze.authorization.service;
+package com.kamegatze.authorization.services;
 
 import jakarta.mail.MessagingException;
 
