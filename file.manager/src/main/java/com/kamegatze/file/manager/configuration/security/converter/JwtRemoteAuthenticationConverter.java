@@ -1,15 +1,15 @@
 package com.kamegatze.file.manager.configuration.security.converter;
 
+import com.kamegatze.file.manager.configuration.security.authentication.token.JwtRemoteAuthenticationToken;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.proc.SimpleSecurityContext;
-import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Setter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
@@ -36,7 +36,7 @@ public class JwtRemoteAuthenticationConverter implements AuthenticationConverter
     }
 
     @Override
-    public Authentication convert(HttpServletRequest request) {
+    public JwtRemoteAuthenticationToken convert(HttpServletRequest request) {
         Optional<String> authorizationHeaderOptional = Optional.ofNullable(
                 request.getHeader(
                         HeaderAuthentication.AUTHORIZATION.name()
@@ -45,17 +45,23 @@ public class JwtRemoteAuthenticationConverter implements AuthenticationConverter
         if (authorizationHeaderOptional.isEmpty()) {
             return null;
         }
+        if (!authorizationHeaderOptional.get().startsWith("Bearer")) {
+            return null;
+        }
         String authorizationHeader = authorizationHeaderOptional.get().substring(7);
+        JWT jwt;
         try {
-            JWTClaimsSet claimsSet = JWTParser.parse(authorizationHeader).getJWTClaimsSet();
+            jwt = JWTParser.parse(authorizationHeader);
             DefaultJWTClaimsVerifier<SecurityContext> claimsVerifier = new DefaultJWTClaimsVerifier<>(
-                claimsSet, Set.of("iss", "sub", "exp", "iat", "authority")
+                jwt.getJWTClaimsSet(), Set.of("iss", "sub", "exp", "iat", "authority")
             );
-            claimsVerifier.verify(claimsSet, new SimpleSecurityContext());
+            claimsVerifier.verify(jwt.getJWTClaimsSet(), new SimpleSecurityContext());
         } catch (ParseException | BadJWTException e) {
             throw new RuntimeException(e);
         }
+        JwtRemoteAuthenticationToken<JWT> authenticationToken = new JwtRemoteAuthenticationToken<>(jwt);
+        authenticationToken.setDetails(authenticationDetailsSource.buildDetails(request));
 
-        return null;
+        return authenticationToken;
     }
 }
