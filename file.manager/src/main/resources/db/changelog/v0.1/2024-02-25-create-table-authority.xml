@@ -14,9 +14,11 @@
             </column>
         </createTable>
         <insert tableName="authority">
+            <column name="id" value="gen_random_uuid()"/>
             <column name="name" value="AUTHORITY_WRITE"/>
         </insert>
         <insert tableName="authority">
+            <column name="id" value="gen_random_uuid()"/>
             <column name="name" value="AUTHORITY_READ"/>
         </insert>
     </changeSet>
