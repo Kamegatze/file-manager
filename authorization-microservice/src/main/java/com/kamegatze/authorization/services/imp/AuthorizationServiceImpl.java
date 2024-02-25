@@ -2,12 +2,7 @@ package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
-import com.kamegatze.authorization.dto.ChangePasswordDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
@@ -22,6 +17,8 @@ import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.services.AuthorizationService;
 import com.kamegatze.authorization.services.EmailService;
 import com.kamegatze.authorization.services.JwtService;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -45,6 +42,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -262,5 +260,23 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private void removeRecoveryCode(Users users) {
         users.setRecoveryCode("");
         usersRepository.save(users);
+    }
+
+    @Override
+    public List<AuthorityDto> getAuthorityByRequest(HttpServletRequest request) throws ParseException {
+        Optional<String> headerOptional = Optional.ofNullable(
+                request.getHeader(ETypeTokenHeader.Authorization.name())
+        );
+        if (headerOptional.isEmpty()) {
+            return List.of();
+        }
+        String header = headerOptional.get().substring(7);
+        JWTClaimsSet claimsSet = JWTParser.parse(header).getJWTClaimsSet();
+        List<Authority> authorities = usersRepository.findByLogin(claimsSet.getSubject()).orElseThrow(
+                () -> new UserNotExistException(String.format("User with login: [%s] not exist", claimsSet.getSubject()))
+        ).getAuthorities();
+        return authorities.stream().map(
+                authority -> new AuthorityDto(authority.getName().name())
+        ).toList();
     }
 }
