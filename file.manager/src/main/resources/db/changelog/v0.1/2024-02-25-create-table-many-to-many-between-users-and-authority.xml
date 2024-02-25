@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="2024-02-25-create-table-many-to-many-between-users-and-authority" author="ShirayevAleksey">
+        <createTable tableName="users_authority">
+            <column name="id" type="uuid">
+                <constraints nullable="true" primaryKey="true" unique="true"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints
+                nullable="true"
+                foreignKeyName="fk-user-id-for-users_authority"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                />
+            </column>
+            <column name="authority_id" type="uuid">
+                <constraints
+                nullable="true"
+                foreignKeyName="fk-authority_id-for-users_authority"
+                referencedTableName="authority"
+                referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

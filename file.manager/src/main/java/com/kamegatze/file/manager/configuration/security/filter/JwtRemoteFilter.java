@@ -64,11 +64,7 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
                 new ParameterizedTypeReference<List<Authority>>() {}
         ).getBody();
 
-        if (authorities != null) {
-            doFilter(request, response, filterChain);
-            return;
-        }
-        if (authorities.isEmpty()) {
+        if (authorities == null || authorities.isEmpty()) {
             doFilter(request, response, filterChain);
             return;
         }

@@ -4,7 +4,15 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-    <changeSet id="2023-12-11-addition-authority-data" author="ShirayevAleksey">
+    <changeSet id="2024-02-25-create-table-authority" author="ShirayevAleksey">
+        <createTable tableName="authority">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" unique="true"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
         <insert tableName="authority">
             <column name="name" value="AUTHORITY_WRITE"/>
         </insert>
