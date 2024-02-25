@@ -12,9 +12,6 @@
             <column name="email" type="text">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="login" type="text">
-                <constraints nullable="false" unique="true"/>
-            </column>
         </addColumn>
     </changeSet>
 </databaseChangeLog>
