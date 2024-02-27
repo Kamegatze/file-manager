@@ -8,5 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Authority {
-    String name;
+    String authority;
 }

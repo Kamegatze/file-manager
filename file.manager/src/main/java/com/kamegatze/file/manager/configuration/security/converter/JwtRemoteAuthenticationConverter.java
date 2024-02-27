@@ -73,7 +73,7 @@ public class JwtRemoteAuthenticationConverter implements AuthenticationConverter
             throw new RuntimeException(e);
         }
         List<SimpleGrantedAuthority> grantedAuthorityList = this.authorities.stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getName())).toList();
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority())).toList();
         JwtRemoteAuthenticationToken<JWT> authenticationToken = new JwtRemoteAuthenticationToken<>(jwt, grantedAuthorityList);
         authenticationToken.setDetails(authenticationDetailsSource.buildDetails(request));
         return authenticationToken;

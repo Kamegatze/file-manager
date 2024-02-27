@@ -20,7 +20,7 @@ public class JwtRemoteAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        JWT jwt = (JWT) authentication.getDetails();
+        JWT jwt = (JWT) authentication.getPrincipal();
         try {
             JWTClaimsSet jwtClaimsSet = jwt.getJWTClaimsSet();
             String login = jwtClaimsSet.getSubject();

@@ -1,12 +1,16 @@
 package com.kamegatze.file.manager.configuration.security;
 
+import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
 import com.kamegatze.file.manager.configuration.security.filter.JwtRemoteFilter;
+import com.kamegatze.file.manager.configuration.security.provider.JwtRemoteAuthenticationProvider;
+import com.kamegatze.file.manager.repositories.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,20 +24,26 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final UsersRepository usersRepository;
     private final AuthenticationConfiguration authenticationConfiguration;
     @Value("${service.authentication.is-authentication.url}")
     private String urlIsAuthentication;
     private Filter jwtRemoteFilter() throws Exception {
         return new JwtRemoteFilter(
-            authenticationManager(),
+            authenticationConfiguration.getAuthenticationManager(),
             new RestTemplate(),
                 urlIsAuthentication
         );
     }
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        UsersServiceDetails usersServiceDetails = new UsersServiceDetails();
+        usersServiceDetails.setUsersRepository(usersRepository);
+        authenticationManagerBuilder.authenticationProvider(new JwtRemoteAuthenticationProvider(usersServiceDetails));
+        return authenticationManagerBuilder.build();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -41,6 +51,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(Customizer.withDefaults())
                 .addFilterAt(jwtRemoteFilter(), UsernamePasswordAuthenticationFilter.class)
+
                 .authorizeHttpRequests(authorization ->
                     authorization.requestMatchers("/**")
                             .permitAll()
