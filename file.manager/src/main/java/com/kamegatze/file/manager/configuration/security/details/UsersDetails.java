@@ -1,27 +1,40 @@
 package com.kamegatze.file.manager.configuration.security.details;
 
 import com.kamegatze.file.manager.models.Users;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
+@Data
+@Builder
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class UsersDetails implements UserDetails {
 
     private Users users;
+    private Collection<? extends GrantedAuthority> grantedAuthorityList;
+    private String token;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return grantedAuthorityList;
     }
 
     @Override
     public String getPassword() {
-        return null;
+        return token;
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return users.getLogin();
     }
 
     @Override

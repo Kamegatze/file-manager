@@ -7,7 +7,4 @@
     <include file="2024-02-18-create-table-file_system.xml" relativeToChangelogFile="true"/>
     <include file="2024-02-18-create-table-children.xml" relativeToChangelogFile="true"/>
     <include file="2024-02-25-add-column-users-table.xml" relativeToChangelogFile="true"/>
-    <include file="2024-02-25-create-table-authority.xml" relativeToChangelogFile="true"/>
-    <include file="2024-02-25-create-table-many-to-many-between-users-and-authority.xml"
-             relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -33,13 +33,16 @@ public class JwtRemoteAuthenticationToken<T extends JWT> extends AbstractAuthent
         super(authorities);
     }
 
+    public T getToken() {
+        return token;
+    }
     @Override
     public Object getCredentials() {
-        return null;
+        return credentials;
     }
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return principal;
     }
 }

@@ -22,4 +22,9 @@ logging:
   level:
     org:
       springframework:
-        security: debug
+        security: info
+
+service:
+  authentication:
+    is-authentication:
+      url: http://localhost:8080/api/authentication/micro-service/is-authentication
