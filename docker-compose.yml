@@ -23,7 +23,15 @@ services:
       - '5433:5432'
     volumes:
       - file_manager:/var/lib/postgresql/file_manager
+  kafka:
+    container_name: kafka
+    image: apache/kafka:latest
+    ports:
+      - '9092:9092'
+    volumes:
+      - kafka:/var/lib/kafka
 
 volumes:
   authorization:
   file_manager:
+  kafka:
