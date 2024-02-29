@@ -17,6 +17,7 @@ import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.services.AuthorizationService;
 import com.kamegatze.authorization.services.EmailService;
 import com.kamegatze.authorization.services.JwtService;
+import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import jakarta.mail.MessagingException;
@@ -68,12 +69,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtIssuerValidator jwtValidator;
     private final SpringTemplateEngine templateEngine;
     private final EmailService emailService;
+    private final ClientTransfer<Object> clientTransfer;
 
     private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
     @Value("${url.change-password}")
     private String urlChangePassword;
-
+    @Value("${spring.kafka.topics.save.users}")
+    private String topicSaveUsers;
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
@@ -104,13 +107,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .build());
 
         String[] name = users.getName().split(" ");
-        return UsersDto.builder()
+        UsersDto usersDtoResult = UsersDto.builder()
                 .id(users.getId())
                 .login(users.getLogin())
                 .email(users.getEmail())
                 .firstName(name[0])
                 .lastName(name[1])
                 .build();
+        clientTransfer.sendData(usersDtoResult, topicSaveUsers);
+        return usersDtoResult;
     }
 
     @Override
