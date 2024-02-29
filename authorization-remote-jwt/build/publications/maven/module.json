@@ -1,0 +1,85 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.kamegatze.authorization",
+    "module": "maven",
+    "version": "1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "maven-1.0-plain.jar",
+          "url": "maven-1.0-plain.jar",
+          "size": 12615,
+          "sha512": "c17075599931dd98779effe6201500065b7f5bbc3af6c9e9b2446af42805fcce95fcb66741c5795291441be760c37b19c3bab047e6975782a9fd9a24a29cc8a5",
+          "sha256": "1cec80a941809afb6a7c2298e6157af7e21bc2cb9b90b401633bac7ef8254c97",
+          "sha1": "3678d07a030a4b306ba0547a5a7fa820b5868ec4",
+          "md5": "bb9e656d19f87c9c9f76107080d0cbb2"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-security"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-data-jpa"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-graphql"
+        },
+        {
+          "group": "com.nimbusds",
+          "module": "nimbus-jose-jwt",
+          "version": {
+            "requires": "9.31"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-web"
+        }
+      ],
+      "files": [
+        {
+          "name": "maven-1.0-plain.jar",
+          "url": "maven-1.0-plain.jar",
+          "size": 12615,
+          "sha512": "c17075599931dd98779effe6201500065b7f5bbc3af6c9e9b2446af42805fcce95fcb66741c5795291441be760c37b19c3bab047e6975782a9fd9a24a29cc8a5",
+          "sha256": "1cec80a941809afb6a7c2298e6157af7e21bc2cb9b90b401633bac7ef8254c97",
+          "sha1": "3678d07a030a4b306ba0547a5a7fa820b5868ec4",
+          "md5": "bb9e656d19f87c9c9f76107080d0cbb2"
+        }
+      ]
+    }
+  ]
+}
