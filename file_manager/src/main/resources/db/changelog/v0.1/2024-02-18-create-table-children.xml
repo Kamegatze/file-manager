@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="2023-02-18-create-table-file_system" author="ShirayevAleksey">
+        <createTable tableName="children">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="parent_id" type="uuid">
+                <constraints nullable="false" foreignKeyName="fk-file_system_id-for-children"
+                    referencedColumnNames="id"
+                    referencedTableName="file_system"/>
+            </column>
+            <column name="children_id" type="uuid">
+                <constraints nullable="false" foreignKeyName="fk-children_id-for-children"
+                    referencedTableName="file_system"
+                    referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
