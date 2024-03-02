@@ -1,4 +1,4 @@
-package com.kamegatze.file.manager.repositories.service;
+package com.kamegatze.file.manager.service;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
