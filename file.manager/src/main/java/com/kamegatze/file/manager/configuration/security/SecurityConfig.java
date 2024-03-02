@@ -1,8 +1,8 @@
 package com.kamegatze.file.manager.configuration.security;
 
+import com.kamegatze.authorization.remote.security.filter.JwtRemoteFilter;
+import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
-import com.kamegatze.file.manager.configuration.security.filter.JwtRemoteFilter;
-import com.kamegatze.file.manager.configuration.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.repositories.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,10 +20,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import jakarta.servlet.Filter;
 import org.springframework.web.client.RestTemplate;
 
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final UsersRepository usersRepository;
     private final AuthenticationConfiguration authenticationConfiguration;
     @Value("${service.authentication.is-authentication.url}")

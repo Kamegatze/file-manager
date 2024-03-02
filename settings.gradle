@@ -1,0 +1,5 @@
+rootProject.name = 'file-manager'
+
+include 'authorization-remote-jwt'
+include 'file.manager'
+include 'authorization-microservice'
