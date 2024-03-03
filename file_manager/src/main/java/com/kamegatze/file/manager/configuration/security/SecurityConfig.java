@@ -4,6 +4,7 @@ import com.kamegatze.authorization.remote.security.filter.JwtRemoteFilter;
 import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
 import com.kamegatze.file.manager.repositories.UsersRepository;
+import com.kamegatze.file.manager.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final UsersRepository usersRepository;
+    private final UsersService usersService;
     private final AuthenticationConfiguration authenticationConfiguration;
     @Value("${service.authentication.is-authentication.url}")
     private String urlIsAuthentication;
@@ -39,7 +40,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         UsersServiceDetails usersServiceDetails = new UsersServiceDetails();
-        usersServiceDetails.setUsersRepository(usersRepository);
+        usersServiceDetails.setUsersService(usersService);
         authenticationManagerBuilder.authenticationProvider(new JwtRemoteAuthenticationProvider(usersServiceDetails));
         return authenticationManagerBuilder.build();
     }

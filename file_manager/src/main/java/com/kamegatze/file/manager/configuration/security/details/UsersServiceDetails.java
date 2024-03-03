@@ -2,6 +2,7 @@ package com.kamegatze.file.manager.configuration.security.details;
 
 import com.kamegatze.file.manager.models.Users;
 import com.kamegatze.file.manager.repositories.UsersRepository;
+import com.kamegatze.file.manager.service.UsersService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,17 +22,10 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class UsersServiceDetails implements UserDetailsService {
     private String token;
-    private UsersRepository usersRepository;
+    private UsersService usersService;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Example<Users> example = Example.of(Users.builder()
-            .login(username)
-            .build()
-        );
-        Users users = usersRepository.findOne(example)
-                .orElseThrow(
-                        () -> new NoSuchElementException(String.format("Users not found by login: [%s]", username))
-                );
+        Users users = usersService.getUsersByLogin(username);
         return UsersDetails.builder()
                 .token(token)
                 .users(users)
