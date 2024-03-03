@@ -17,10 +17,11 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-@Entity
+
 @Table
 @Setter
 @Getter
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

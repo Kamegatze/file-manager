@@ -21,7 +21,7 @@
                     referencedColumnNames="id"/>
             </column>
             <column name="parent_id" type="uuid">
-                <constraints nullable="false" foreignKeyName="fk-parent_id-for-file_system"
+                <constraints nullable="true" foreignKeyName="fk-parent_id-for-file_system"
                     referencedTableName="file_system"
                     referencedColumnNames="id"/>
             </column>
