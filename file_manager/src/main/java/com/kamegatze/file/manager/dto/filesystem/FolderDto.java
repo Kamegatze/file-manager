@@ -1,11 +1,11 @@
 package com.kamegatze.file.manager.dto.filesystem;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
 
 import java.util.UUID;
 
@@ -14,8 +14,8 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChildrenDto {
+public class FolderDto {
     private UUID id;
-    private FileSystemDto parent;
-    private FileSystemDto children;
+    private String name;
+    private UUID parentId;
 }

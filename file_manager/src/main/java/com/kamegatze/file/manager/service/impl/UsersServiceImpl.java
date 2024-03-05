@@ -35,7 +35,7 @@ public class UsersServiceImpl implements UsersService {
             fileSystemRepository.save(
                 FileSystem.builder()
                     .user(users)
-                    .isFile(Boolean.TRUE)
+                    .isFile(Boolean.FALSE)
                     .name("root")
                     .build()
             );

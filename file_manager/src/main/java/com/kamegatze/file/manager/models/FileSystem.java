@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +16,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Blob;
-import java.util.List;
 import java.util.UUID;
 
 @Setter
@@ -45,9 +43,6 @@ public class FileSystem {
 
     @Column
     private UUID parentId;
-
-    @OneToMany(mappedBy = "parent")
-    private List<Children> children;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

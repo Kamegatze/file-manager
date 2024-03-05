@@ -15,9 +15,9 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileSystemDto {
+public class FileDto {
     private UUID id;
-    private Boolean isFile;
+    private Blob file;
     private String name;
     private UUID parentId;
 }
