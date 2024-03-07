@@ -30,6 +30,12 @@ spring:
     graphiql:
       enabled: true
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      save:
+        users: save-users
+
 logging:
   level:
     org:
@@ -44,3 +50,12 @@ app:
   name-application: authorization-file-manager
   access-token: 30
   refresh-token: 1440
+
+mail:
+  path: templates/email/
+  suffix: .html
+  template-mode: HTML5
+  encoding: UTF-8
+
+url:
+  change-password: http://localhost:4200/authentication/change-password

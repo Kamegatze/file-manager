@@ -1,9 +1,6 @@
 package com.kamegatze.authorization.services;
 
-import com.kamegatze.authorization.dto.ChangePasswordDto;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
@@ -20,6 +17,7 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.validation.annotation.Validated;
 
 import java.text.ParseException;
+import java.util.List;
 
 @Validated
 public interface AuthorizationService {
@@ -39,4 +37,6 @@ public interface AuthorizationService {
                   String loginOrEmail) throws MessagingException;
 
     void changePassword(@Valid ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException;
+
+    List<AuthorityDto> getAuthorityByRequest(HttpServletRequest request) throws ParseException;
 }

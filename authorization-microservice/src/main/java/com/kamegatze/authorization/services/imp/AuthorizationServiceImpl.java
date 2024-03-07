@@ -2,12 +2,7 @@ package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
-import com.kamegatze.authorization.dto.ChangePasswordDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
@@ -22,6 +17,9 @@ import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.services.AuthorizationService;
 import com.kamegatze.authorization.services.EmailService;
 import com.kamegatze.authorization.services.JwtService;
+import com.kamegatze.authorization.transfer.client.ClientTransfer;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -45,6 +43,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -70,12 +69,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtIssuerValidator jwtValidator;
     private final SpringTemplateEngine templateEngine;
     private final EmailService emailService;
+    private final ClientTransfer<Object> clientTransfer;
 
     private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
     @Value("${url.change-password}")
     private String urlChangePassword;
-
+    @Value("${spring.kafka.topics.save.users}")
+    private String topicSaveUsers;
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
@@ -106,13 +107,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .build());
 
         String[] name = users.getName().split(" ");
-        return UsersDto.builder()
+        UsersDto usersDtoResult = UsersDto.builder()
                 .id(users.getId())
                 .login(users.getLogin())
                 .email(users.getEmail())
                 .firstName(name[0])
                 .lastName(name[1])
                 .build();
+        clientTransfer.sendData(usersDtoResult, topicSaveUsers);
+        return usersDtoResult;
     }
 
     @Override
@@ -262,5 +265,23 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private void removeRecoveryCode(Users users) {
         users.setRecoveryCode("");
         usersRepository.save(users);
+    }
+
+    @Override
+    public List<AuthorityDto> getAuthorityByRequest(HttpServletRequest request) throws ParseException {
+        Optional<String> headerOptional = Optional.ofNullable(
+                request.getHeader(ETypeTokenHeader.Authorization.name())
+        );
+        if (headerOptional.isEmpty()) {
+            return List.of();
+        }
+        String header = headerOptional.get().substring(7);
+        JWTClaimsSet claimsSet = JWTParser.parse(header).getJWTClaimsSet();
+        List<Authority> authorities = usersRepository.findByLogin(claimsSet.getSubject()).orElseThrow(
+                () -> new UserNotExistException(String.format("User with login: [%s] not exist", claimsSet.getSubject()))
+        ).getAuthorities();
+        return authorities.stream().map(
+                authority -> new AuthorityDto(authority.getName().name())
+        ).toList();
     }
 }
