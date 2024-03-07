@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FileSystemService {
-    FolderDto createFolderByFolderParentId(FolderDto fileSystemDto, HttpServletRequest httpServletRequest);
-    FileDto createSaveFileByFolderParentId(FileDto fileSystemDto, HttpServletRequest httpServletRequest);
-    List<FileSystemDto> getChildrenByFolderParentId(UUID parentId, HttpServletRequest httpServletRequest);
+    FileSystemDto createFolderByFolderParentId(FolderDto fileSystemDto, HttpServletRequest httpServletRequest);
+    FileSystemDto createSaveFileByFolderParentId(FileDto fileSystemDto, HttpServletRequest httpServletRequest);
+    List<FileSystemDto> getChildrenByParentId(UUID parentId, HttpServletRequest httpServletRequest);
     FileSystemDto getFileSystem(UUID fileSystemId);
 }

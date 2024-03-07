@@ -3,7 +3,6 @@ package com.kamegatze.file.manager.configuration.security;
 import com.kamegatze.authorization.remote.security.filter.JwtRemoteFilter;
 import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
-import com.kamegatze.file.manager.repositories.UsersRepository;
 import com.kamegatze.file.manager.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

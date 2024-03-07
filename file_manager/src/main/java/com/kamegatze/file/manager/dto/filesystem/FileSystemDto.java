@@ -1,13 +1,11 @@
 package com.kamegatze.file.manager.dto.filesystem;
 
-import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.sql.Blob;
 import java.util.UUID;
 
 @Data

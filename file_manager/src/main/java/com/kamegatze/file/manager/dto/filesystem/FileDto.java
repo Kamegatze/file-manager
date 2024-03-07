@@ -1,6 +1,5 @@
 package com.kamegatze.file.manager.dto.filesystem;
 
-import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

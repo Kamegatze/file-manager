@@ -32,30 +32,35 @@ public class FileSystemServiceImpl implements FileSystemService {
     private final MapperClazz mapperClazz;
 
     @Override
-    public FolderDto createFolderByFolderParentId(FolderDto fileSystemDto,
+    public FileSystemDto createFolderByFolderParentId(FolderDto fileSystemDto,
                                                   HttpServletRequest request) {
+        log.info("Start operation save folder: {}", fileSystemDto);
         FileSystem fileSystem = mapperClazz.mapperToClazz(fileSystemDto, FileSystem.class);
         Users users = usersService.getUsersByLogin(jwtService.getLogin(request));
         fileSystem.setUser(users);
         fileSystem.setIsFile(Boolean.FALSE);
         fileSystem = fileSystemRepository.save(fileSystem);
-        return mapperClazz.mapperToClazz(fileSystem, FolderDto.class);
+        log.info("End operation save folder: {}", fileSystemDto);
+        return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
 
     @Override
-    public FileDto createSaveFileByFolderParentId(FileDto fileSystemDto,
+    public FileSystemDto createSaveFileByFolderParentId(FileDto fileSystemDto,
                                                   HttpServletRequest request) {
+        log.info("Start operation save file: {}", fileSystemDto);
         Users users = usersService.getUsersByLogin(jwtService.getLogin(request));
         FileSystem fileSystem = mapperClazz.mapperToClazz(fileSystemDto, FileSystem.class);
         fileSystem.setUser(users);
         fileSystem.setIsFile(Boolean.TRUE);
         fileSystem = fileSystemRepository.save(fileSystem);
-        return mapperClazz.mapperToClazz(fileSystem, FileDto.class);
+        log.info("End operation save file: {}", fileSystemDto);
+        return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
 
     @Override
-    public List<FileSystemDto> getChildrenByFolderParentId(UUID parentId,
+    public List<FileSystemDto> getChildrenByParentId(UUID parentId,
                                                            HttpServletRequest request) {
+        log.info("Start operation extracts children by parentId: {}", parentId);
         Users users = usersService.getUsersByLogin(jwtService.getLogin(request));
         Example<FileSystem> requestFileSystem = Example.of(
                 FileSystem.builder()
@@ -63,15 +68,18 @@ public class FileSystemServiceImpl implements FileSystemService {
                         .user(users)
                         .build()
         );
+        log.info("End operation extracts children by parentId: {}", parentId);
         return mapperClazz.mapperToList(fileSystemRepository.findAll(requestFileSystem), FileSystemDto.class);
     }
 
     @Override
     public FileSystemDto getFileSystem(UUID fileSystemId) {
+        log.info("Start operation extracts fileSystem by fileSystemId: {}", fileSystemId);
         FileSystem fileSystem = fileSystemRepository.findById(fileSystemId)
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("FileSystem not found by id: %s", fileSystemId)
                 ));
+        log.info("End operation extracts fileSystem by fileSystemId: {}", fileSystemId);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
 }
