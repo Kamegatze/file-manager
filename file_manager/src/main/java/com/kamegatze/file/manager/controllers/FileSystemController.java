@@ -4,11 +4,13 @@ import com.kamegatze.file.manager.dto.filesystem.FileDto;
 import com.kamegatze.file.manager.dto.filesystem.FileSystemDto;
 import com.kamegatze.file.manager.dto.filesystem.FolderDto;
 import com.kamegatze.file.manager.service.FileSystemService;
+import com.kamegatze.general.dto.response.ResponseDtoByDelete;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,5 +81,18 @@ public class FileSystemController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(fileSystemDto);
+    }
+
+    @DeleteMapping("/{fileSystemId}")
+    ResponseEntity<ResponseDtoByDelete> handleDeleteById(@PathVariable UUID fileSystemId) {
+        UUID deleteId = fileSystemService.deleteFileSystemById(fileSystemId);
+        final ResponseDtoByDelete responseDtoByDelete = ResponseDtoByDelete.builder()
+                .deleteId(deleteId)
+                .message("")
+                .status(HttpStatus.ACCEPTED)
+                .build();
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responseDtoByDelete);
     }
 }

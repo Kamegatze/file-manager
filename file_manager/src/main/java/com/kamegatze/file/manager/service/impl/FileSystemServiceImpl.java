@@ -82,4 +82,10 @@ public class FileSystemServiceImpl implements FileSystemService {
         log.info("End operation extracts fileSystem by fileSystemId: {}", fileSystemId);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
+
+    @Override
+    public UUID deleteFileSystemById(UUID fileSystemId) {
+        fileSystemRepository.deleteById(fileSystemId);
+        return fileSystemId;
+    }
 }

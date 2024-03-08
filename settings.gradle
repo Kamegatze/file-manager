@@ -4,4 +4,5 @@ include 'authorization-remote-jwt'
 include 'authorization-microservice'
 include 'file_manager'
 include 'file_manager'
+include 'general-dto'
 

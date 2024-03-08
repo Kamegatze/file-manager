@@ -13,4 +13,5 @@ public interface FileSystemService {
     FileSystemDto createSaveFileByFolderParentId(FileDto fileSystemDto, HttpServletRequest httpServletRequest);
     List<FileSystemDto> getChildrenByParentId(UUID parentId, HttpServletRequest httpServletRequest);
     FileSystemDto getFileSystem(UUID fileSystemId);
+    UUID deleteFileSystemById(UUID fileSystemId);
 }
