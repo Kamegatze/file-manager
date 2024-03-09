@@ -43,4 +43,4 @@ logging:
 service:
   authentication:
     is-authentication:
-      url: http://localhost:8080/api/authentication/micro-service/is-authentication
+      url: http://localhost:9200/api/authentication/micro-service/is-authentication
