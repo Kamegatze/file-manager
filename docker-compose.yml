@@ -42,17 +42,6 @@ services:
       - KAFKA_CFG_NODE_ID=0
     volumes:
       - kafka:/var/lib/kafka
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - KAFKA_CLUSTERS_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CLUSTERS_NAME=kraft
-      - AUTH_TYPE="LOGIN_FORM"
-      - SPRING_SECURITY_USER_NAME=kafka
-      - SPRING_SECURITY_USER_PASSWORD=kafka
   authorization-microservice:
     container_name: authorization-microservice
     build:
