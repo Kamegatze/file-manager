@@ -3,10 +3,12 @@ package com.kamegatze.file.manager.controllers;
 import com.kamegatze.file.manager.dto.filesystem.FileDto;
 import com.kamegatze.file.manager.dto.filesystem.FileSystemDto;
 import com.kamegatze.file.manager.dto.filesystem.FolderDto;
+import com.kamegatze.file.manager.models.FileSystem;
 import com.kamegatze.file.manager.service.FileSystemService;
 import com.kamegatze.general.dto.response.ResponseDtoByDelete;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -94,5 +96,15 @@ public class FileSystemController {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(responseDtoByDelete);
+    }
+
+    @GetMapping("/download/{fileId}")
+    ResponseEntity<byte[]> handleDownloadFile(@PathVariable UUID fileId) throws SQLException, IOException {
+        FileSystem fileSystem = fileSystemService.getFileByFileId(fileId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileSystem.getName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(fileSystem.getFile().length())
+                .body(fileSystem.getFile().getBinaryStream().readAllBytes());
     }
 }

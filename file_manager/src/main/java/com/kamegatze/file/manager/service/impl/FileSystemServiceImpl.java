@@ -17,6 +17,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Blob;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -75,10 +76,7 @@ public class FileSystemServiceImpl implements FileSystemService {
     @Override
     public FileSystemDto getFileSystem(UUID fileSystemId) {
         log.info("Start operation extracts fileSystem by fileSystemId: {}", fileSystemId);
-        FileSystem fileSystem = fileSystemRepository.findById(fileSystemId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        String.format("FileSystem not found by id: %s", fileSystemId)
-                ));
+        FileSystem fileSystem = getFileSystemById(fileSystemId);
         log.info("End operation extracts fileSystem by fileSystemId: {}", fileSystemId);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
@@ -87,5 +85,17 @@ public class FileSystemServiceImpl implements FileSystemService {
     public UUID deleteFileSystemById(UUID fileSystemId) {
         fileSystemRepository.deleteById(fileSystemId);
         return fileSystemId;
+    }
+
+    @Override
+    public FileSystem getFileByFileId(UUID fileId) {
+        return getFileSystemById(fileId);
+    }
+
+    private FileSystem getFileSystemById(UUID id) {
+        return fileSystemRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format("FileSystem not found by id: %s", id)
+                ));
     }
 }

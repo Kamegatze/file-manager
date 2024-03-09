@@ -19,6 +19,7 @@ repositories {
 dependencies {
     implementation project(":general-dto")
     implementation project(':authorization-remote-jwt')
+    runtimeOnly 'org.postgresql:postgresql'
 }
 
 tasks.named('test') {
