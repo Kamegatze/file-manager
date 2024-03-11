@@ -43,4 +43,7 @@ logging:
 service:
   authentication:
     is-authentication:
-      url: http://localhost:9200/api/authentication/micro-service/is-authentication
+      url: api/authentication/micro-service/is-authentication
+      protocol: http
+      port: 9200
+      host: localhost
