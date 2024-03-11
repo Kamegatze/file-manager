@@ -6,6 +6,7 @@ import com.kamegatze.file.manager.dto.filesystem.FolderDto;
 import com.kamegatze.file.manager.models.FileSystem;
 import com.kamegatze.file.manager.service.FileSystemService;
 import com.kamegatze.general.dto.response.ResponseDtoByDelete;
+import com.kamegatze.general.dto.template.response.TemplateMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -90,7 +91,7 @@ public class FileSystemController {
         UUID deleteId = fileSystemService.deleteFileSystemById(fileSystemId);
         final ResponseDtoByDelete responseDtoByDelete = ResponseDtoByDelete.builder()
                 .deleteId(deleteId)
-                .message("")
+                .message(String.format(TemplateMessage.messageByDelete, "FileSystem", deleteId))
                 .status(HttpStatus.ACCEPTED)
                 .build();
         return ResponseEntity.status(HttpStatus.ACCEPTED)
