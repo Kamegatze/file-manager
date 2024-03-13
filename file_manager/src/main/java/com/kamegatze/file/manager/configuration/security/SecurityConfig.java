@@ -5,7 +5,6 @@ import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticat
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
 import com.kamegatze.file.manager.service.UsersService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,13 +25,12 @@ import org.springframework.web.client.RestTemplate;
 public class SecurityConfig {
     private final UsersService usersService;
     private final AuthenticationConfiguration authenticationConfiguration;
-    @Value("${service.authentication.is-authentication.url}")
-    private String urlIsAuthentication;
+    private final ConfigurationRemoteServer configurationRemoteServer;
     private Filter jwtRemoteFilter() throws Exception {
         return new JwtRemoteFilter(
             authenticationConfiguration.getAuthenticationManager(),
             new RestTemplate(),
-                urlIsAuthentication
+            configurationRemoteServer.getUrl()
         );
     }
     @Bean
