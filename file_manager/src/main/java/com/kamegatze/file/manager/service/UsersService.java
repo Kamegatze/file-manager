@@ -19,6 +19,6 @@ public interface UsersService {
     Users getUsersByLogin(@NotNull
                           @NotBlank
                           @NotEmpty
-                          @Size(min = 5, message = "Your login need more 5 sign")
+                          @Size(min = 5, message = "The login need more 5 sign")
                           String login);
 }
