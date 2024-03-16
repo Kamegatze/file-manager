@@ -1,10 +1,7 @@
 package com.kamegatze.authorization.configuration.security;
 
 import com.kamegatze.authorization.configuration.security.http.entry.point.ExceptionEntryPoint;
-import com.kamegatze.authorization.configuration.security.http.filter.BearerTokenAuthenticationFilterWithRefreshToken;
 import com.kamegatze.authorization.model.EAuthority;
-import com.kamegatze.authorization.repoitory.UsersRepository;
-import com.kamegatze.authorization.services.JwtService;
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +10,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,9 +21,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Collection;
@@ -38,20 +38,13 @@ import java.util.Collection;
 public class SecurityConfig {
     private final ExceptionEntryPoint exceptionEntryPoint;
     private final UserDetailsService userDetailsService;
-    private final AuthenticationConfiguration authenticationConfiguration;
-    private final JwtService jwtService;
-    private final JwtIssuerValidator jwtIssuerValidator;
-    private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtDecoder jwtDecoder;
 
-
-    private Filter bearerTokenAuthenticationFilterWithRefreshToken() throws Exception {
-        return new BearerTokenAuthenticationFilterWithRefreshToken(
-                authenticationManager(authenticationConfiguration),
-                jwtService,
-                jwtIssuerValidator,
-                usersRepository
-        );
+    private Filter bearerTokenAuthenticationFilter(AuthenticationManager authenticationManager) {
+        BearerTokenAuthenticationFilter authenticationFilter = new BearerTokenAuthenticationFilter(authenticationManager);
+        authenticationFilter.setAuthenticationEntryPoint(exceptionEntryPoint);
+        return authenticationFilter;
     }
 
     private DaoAuthenticationProvider authenticationProvider() {
@@ -60,10 +53,15 @@ public class SecurityConfig {
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    private AuthenticationManager authenticationManagerWithJwtAuthenticationProvider(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.authenticationProvider(new JwtAuthenticationProvider(jwtDecoder));
+        return authenticationManagerBuilder.build();
     }
 
 
@@ -85,7 +83,7 @@ public class SecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilter(bearerTokenAuthenticationFilterWithRefreshToken())
+                .addFilter(bearerTokenAuthenticationFilter(authenticationManagerWithJwtAuthenticationProvider(http)))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPoint))
                 .authorizeHttpRequests(authorize ->
                         authorize
