@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -53,15 +52,16 @@ public class SecurityConfig {
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
 
-    private AuthenticationManager authenticationManagerWithJwtAuthenticationProvider(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.authenticationProvider(new JwtAuthenticationProvider(jwtDecoder));
         return authenticationManagerBuilder.build();
+    }
+
+    private JwtAuthenticationProvider jwtAuthenticationProvider() {
+        return new JwtAuthenticationProvider(jwtDecoder);
     }
 
 
@@ -79,11 +79,9 @@ public class SecurityConfig {
         return converter;
     }
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilter(bearerTokenAuthenticationFilter(authenticationManagerWithJwtAuthenticationProvider(http)))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPoint))
                 .authorizeHttpRequests(authorize ->
                         authorize
@@ -98,6 +96,8 @@ public class SecurityConfig {
                         )
                 )
                 .authenticationProvider(authenticationProvider())
+                .authenticationProvider(jwtAuthenticationProvider())
+                .addFilter(bearerTokenAuthenticationFilter(authenticationManager))
                 .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
 
