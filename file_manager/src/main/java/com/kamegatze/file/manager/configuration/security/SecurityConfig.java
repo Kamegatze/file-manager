@@ -18,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import jakarta.servlet.Filter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 
 @Configuration
@@ -26,11 +27,13 @@ public class SecurityConfig {
     private final UsersService usersService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final ConfigurationRemoteServer configurationRemoteServer;
+    private final HandlerExceptionResolver handlerExceptionResolver;
     private Filter jwtRemoteFilter() throws Exception {
         return new JwtRemoteFilter(
             authenticationConfiguration.getAuthenticationManager(),
             new RestTemplate(),
-            configurationRemoteServer.getUrl()
+            configurationRemoteServer.getUrl(),
+            handlerExceptionResolver
         );
     }
     @Bean
