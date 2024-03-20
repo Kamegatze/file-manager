@@ -28,6 +28,7 @@ ext {
 }
 
 dependencies {
+    implementation project(':authorization-remote-jwt')
     implementation project(":general-dto")
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
