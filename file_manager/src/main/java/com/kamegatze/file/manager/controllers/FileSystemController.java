@@ -37,7 +37,7 @@ import java.util.UUID;
 public class FileSystemController {
     private final FileSystemService fileSystemService;
     @GetMapping("/children")
-    ResponseEntity<List<FileSystemDto>> handleGetChildrenByParentId(@RequestParam UUID parentId,
+    ResponseEntity<List<FileSystemDto>> handleGetChildrenByParentId(@RequestParam String parentId,
                                                                     HttpServletRequest request) {
         List<FileSystemDto> fileSystems = fileSystemService.getChildrenByParentId(parentId, request);
         return ResponseEntity.status(HttpStatus.OK)
@@ -79,7 +79,7 @@ public class FileSystemController {
     }
 
     @GetMapping("/{fileSystemId}")
-    ResponseEntity<FileSystemDto> handleFolderById(@PathVariable UUID fileSystemId) {
+    ResponseEntity<FileSystemDto> handleFolderById(@PathVariable String fileSystemId) {
         FileSystemDto fileSystemDto = fileSystemService.getFileSystem(fileSystemId);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +87,7 @@ public class FileSystemController {
     }
 
     @DeleteMapping("/{fileSystemId}")
-    ResponseEntity<ResponseDtoByDelete> handleDeleteById(@PathVariable UUID fileSystemId) {
+    ResponseEntity<ResponseDtoByDelete> handleDeleteById(@PathVariable String fileSystemId) {
         UUID deleteId = fileSystemService.deleteFileSystemById(fileSystemId);
         final ResponseDtoByDelete responseDtoByDelete = ResponseDtoByDelete.builder()
                 .deleteId(deleteId)
@@ -100,12 +100,20 @@ public class FileSystemController {
     }
 
     @GetMapping("/download/{fileId}")
-    ResponseEntity<byte[]> handleDownloadFile(@PathVariable UUID fileId) throws SQLException, IOException {
+    ResponseEntity<byte[]> handleDownloadFile(@PathVariable String fileId) throws SQLException, IOException {
         FileSystem fileSystem = fileSystemService.getFileByFileId(fileId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileSystem.getName() + "\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(fileSystem.getFile().length())
                 .body(fileSystem.getFile().getBinaryStream().readAllBytes());
+    }
+
+    @GetMapping("/get-root")
+    ResponseEntity<FileSystemDto> handleGetRoot(HttpServletRequest request) {
+        FileSystemDto fileSystem = fileSystemService.getRoot(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileSystem);
     }
 }

@@ -1,12 +1,12 @@
 package com.kamegatze.authorization.advice;
 
 import com.kamegatze.authorization.controllers.AuthenticationController;
-import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
+import com.kamegatze.general.dto.response.ResponseDto;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,85 +19,85 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice(assignableTypes = AuthenticationController.class)
 public class AuthenticationAdvice {
     @ExceptionHandler({BadCredentialsException.class})
-    public ResponseEntity<Response> handleBadCredentialsException(Exception e) {
+    public ResponseEntity<ResponseDto> handleBadCredentialsException(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.UNAUTHORIZED.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.UNAUTHORIZED)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({UserNotExistException.class})
-    public ResponseEntity<Response> handleUserNotExistException(Exception e) {
+    public ResponseEntity<ResponseDto> handleUserNotExistException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.BAD_REQUEST.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({RefreshTokenIsNullException.class})
-    public ResponseEntity<Response> handleRefreshTokenIsNullException(Exception e) {
+    public ResponseEntity<ResponseDto> handleRefreshTokenIsNullException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.BAD_REQUEST.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({InvalidBearerTokenException.class})
-    public ResponseEntity<Response> handleInvalidBearerTokenException(Exception e) {
+    public ResponseEntity<ResponseDto> handleInvalidBearerTokenException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.BAD_REQUEST.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({NotEqualsPasswordException.class})
-    public ResponseEntity<Response> handleNotEqualsPasswordException(Exception e) {
+    public ResponseEntity<ResponseDto> handleNotEqualsPasswordException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.BAD_REQUEST.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({MessagingException.class})
-    public ResponseEntity<Response> handleMessagingException(Exception e) {
+    public ResponseEntity<ResponseDto> handleMessagingException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(HttpStatus.BAD_REQUEST.value())
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
                         .message(e.getMessage())
                         .build());
     }
 
     @ExceptionHandler({UsersExistException.class})
-    public ResponseEntity<Response> handleUsersExistException(Exception e) {
+    public ResponseEntity<ResponseDto> handleUsersExistException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(
-                    Response.builder()
+                    ResponseDto.builder()
                             .message(e.getMessage())
-                            .returnCode(HttpStatus.BAD_REQUEST.value())
+                            .status(HttpStatus.BAD_REQUEST)
                             .build()
                 );
     }
 
     @ExceptionHandler({EqualsPasswordException.class})
-    public ResponseEntity<Response> handleEqualsPasswordException(Exception e) {
+    public ResponseEntity<ResponseDto> handleEqualsPasswordException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(
-                        Response.builder()
+                        ResponseDto.builder()
                                 .message(e.getMessage())
-                                .returnCode(HttpStatus.BAD_REQUEST.value())
+                                .status(HttpStatus.BAD_REQUEST)
                                 .build()
                 );
     }

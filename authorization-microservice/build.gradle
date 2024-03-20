@@ -28,8 +28,9 @@ ext {
 }
 
 dependencies {
+    implementation project(':authorization-remote-jwt')
+    implementation project(":general-dto")
     runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
     testImplementation 'org.springframework.graphql:spring-graphql-test'
     implementation 'com.graphql-java-kickstart:graphql-spring-boot-starter:15.1.0'

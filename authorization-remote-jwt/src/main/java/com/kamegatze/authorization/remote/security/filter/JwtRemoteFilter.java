@@ -1,7 +1,15 @@
 package com.kamegatze.authorization.remote.security.filter;
 
+import com.kamegatze.authorization.remote.security.converter.HeaderAuthentication;
 import com.kamegatze.authorization.remote.security.converter.JwtRemoteAuthenticationConverter;
+import com.kamegatze.authorization.remote.security.exception.HttpInvalidJwtException;
 import com.kamegatze.authorization.remote.security.filter.model.Authority;
+import com.kamegatze.authorization.remote.security.http.entry.point.ExceptionEntryPoint;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,40 +24,44 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class JwtRemoteFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
     private final RestOperations restOperations;
-
     private final String urlIsAuthentication;
-
-    private final AuthenticationEntryPoint authenticationEntryPoint = new Http403ForbiddenEntryPoint();
-    private final AuthenticationFailureHandler authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
-            this.authenticationEntryPoint);
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final AuthenticationFailureHandler authenticationFailureHandler;
     private final SecurityContextRepository securityContextRepository = new RequestAttributeSecurityContextRepository();
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
-    public JwtRemoteFilter(AuthenticationManager authenticationManager, RestOperations restOperations, String urlIsAuthentication) {
+    public JwtRemoteFilter(AuthenticationManager authenticationManager, RestOperations restOperations, String urlIsAuthentication, HandlerExceptionResolver handlerExceptionResolver) {
         this.authenticationManager = authenticationManager;
         this.restOperations = restOperations;
         this.urlIsAuthentication = urlIsAuthentication;
+        this.authenticationEntryPoint = new ExceptionEntryPoint(handlerExceptionResolver);
+        this.authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
+                this.authenticationEntryPoint);
     }
 
     @Override
@@ -57,10 +69,27 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        AuthenticationConverter converter = new JwtRemoteAuthenticationConverter(getAuthorities(request));
+        Optional<Exception> runtimeException = validate(request);
+        if(runtimeException.isPresent()) {
+            authenticationFailureHandler.onAuthenticationFailure(request, response,
+                    new InvalidBearerTokenException(runtimeException.get().getMessage(),
+                    runtimeException.get()));
+            return;
+        }
+        List<Authority> authorities;
+        try {
+            authorities = getAuthorities(request);
+        }
+        catch (HttpClientErrorException exception) {
+            authenticationFailureHandler.onAuthenticationFailure(request, response,
+                    new HttpInvalidJwtException(exception.getMessage(), exception));
+            return;
+        }
+        AuthenticationConverter converter = new JwtRemoteAuthenticationConverter(authorities);
         Optional<Authentication> authenticationOptional = Optional.ofNullable(
                 converter.convert(request)
         );
+
         if (authenticationOptional.isEmpty()) {
             doFilter(request, response, filterChain);
             return;
@@ -68,7 +97,6 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
 
         Authentication authentication = authenticationOptional.get();
 
-        List<Authority> authorities = getAuthorities(request);
         if (authorities == null || authorities.isEmpty()) {
             doFilter(request, response, filterChain);
             return;
@@ -82,7 +110,7 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
             doFilter(request, response, filterChain);
         } catch (AuthenticationException failed) {
             securityContextHolderStrategy.clearContext();
-            authenticationFailureHandler.onAuthenticationFailure(request,response, failed);
+            authenticationFailureHandler.onAuthenticationFailure(request, response, failed);
         }
     }
 
@@ -105,4 +133,31 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
                 new ParameterizedTypeReference<List<Authority>>() {}
         ).getBody();
     }
+
+    private Optional<Exception> validate(HttpServletRequest request) {
+        Optional<String> authorizationHeaderOptional = Optional.ofNullable(
+                request.getHeader(
+                        HeaderAuthentication.AUTHORIZATION.name()
+                )
+        );
+        if (authorizationHeaderOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        if (!authorizationHeaderOptional.get().startsWith("Bearer")) {
+            return Optional.empty();
+        }
+        String authorizationHeader = authorizationHeaderOptional.get().substring(7);
+        JWT jwt;
+        try {
+            jwt = JWTParser.parse(authorizationHeader);
+            DefaultJWTClaimsVerifier<com.nimbusds.jose.proc.SecurityContext> claimsVerifier = new DefaultJWTClaimsVerifier<>(
+                    jwt.getJWTClaimsSet(), Set.of("iss", "sub", "exp", "iat", "authority")
+            );
+            claimsVerifier.verify(jwt.getJWTClaimsSet(), new SimpleSecurityContext());
+        } catch (ParseException | BadJWTException e) {
+            return Optional.of(e);
+        }
+        return Optional.empty();
+    }
 }
+
