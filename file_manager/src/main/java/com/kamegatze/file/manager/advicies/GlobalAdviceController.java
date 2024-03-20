@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kamegatze.authorization.remote.security.exception.HttpInvalidJwtException;
 import com.kamegatze.general.dto.response.ResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -34,8 +36,8 @@ public class GlobalAdviceController {
                 .body(responseDto);
     }
 
-    @ExceptionHandler({InvalidBearerTokenException.class})
-    public ResponseEntity<ResponseDto> handleInvalidBearerTokenException(InvalidBearerTokenException exception) {
+    @ExceptionHandler({AuthenticationException.class})
+    public ResponseEntity<ResponseDto> handleInvalidBearerTokenException(AuthenticationException exception) {
         ResponseDto responseDto = ResponseDto.builder()
                 .message(exception.getMessage())
                 .status(HttpStatus.UNAUTHORIZED)
@@ -43,5 +45,15 @@ public class GlobalAdviceController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(responseDto);
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class, HttpMessageNotReadableException.class})
+    public ResponseEntity<ResponseDto> handleConstraintViolationException(Exception exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message(exception.getMessage())
+                        .build());
     }
 }
