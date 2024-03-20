@@ -31,7 +31,7 @@ public class FileSystemServiceImpl implements FileSystemService {
     private final UsersService usersService;
     private final JwtService jwtService;
     private final MapperClazz mapperClazz;
-
+    private final String root = "root";
     @Override
     public FileSystemDto createFolderByFolderParentId(FolderDto fileSystemDto,
                                                   HttpServletRequest request) {
@@ -107,6 +107,25 @@ public class FileSystemServiceImpl implements FileSystemService {
     @Override
     public FileSystem getFileByFileId(String fileId) {
         return getFileSystemById(UUID.fromString(fileId));
+    }
+
+    @Override
+    public FileSystemDto getRoot(HttpServletRequest request) {
+        String login = jwtService.getLogin(request);
+        Example<FileSystem> requestRoot = Example.of(
+                FileSystem.builder()
+                        .user(usersService.getUsersByLogin(login))
+                        .name(root)
+                        .isFile(Boolean.FALSE)
+                        .build()
+        );
+        FileSystem fileSystem = fileSystemRepository.findOne(requestRoot)
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format(
+                                "FileSystem not found by {login: %s}, by {name: %s} and by {isFile: %s}",
+                        login, root, Boolean.FALSE)
+                ));
+        return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
 
     private FileSystem getFileSystemById(UUID id) {

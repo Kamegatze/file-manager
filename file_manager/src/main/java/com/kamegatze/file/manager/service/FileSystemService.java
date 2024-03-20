@@ -52,4 +52,6 @@ public interface FileSystemService {
                                       message = "incorrect uuid"
                               )
                               String fileSystemId);
+
+    FileSystemDto getRoot(HttpServletRequest request);
 }

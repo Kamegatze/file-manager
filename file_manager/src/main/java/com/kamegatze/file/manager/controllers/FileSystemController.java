@@ -108,4 +108,12 @@ public class FileSystemController {
                 .contentLength(fileSystem.getFile().length())
                 .body(fileSystem.getFile().getBinaryStream().readAllBytes());
     }
+
+    @GetMapping("/get-root")
+    ResponseEntity<FileSystemDto> handleGetRoot(HttpServletRequest request) {
+        FileSystemDto fileSystem = fileSystemService.getRoot(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileSystem);
+    }
 }
