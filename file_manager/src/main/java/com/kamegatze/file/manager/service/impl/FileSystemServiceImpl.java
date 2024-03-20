@@ -75,13 +75,13 @@ public class FileSystemServiceImpl implements FileSystemService {
     }
 
     @Override
-    public List<FileSystemDto> getChildrenByParentId(UUID parentId,
+    public List<FileSystemDto> getChildrenByParentId(String parentId,
                                                            HttpServletRequest request) {
         log.info("Start operation extracts children by parentId: {}", parentId);
         Users users = usersService.getUsersByLogin(jwtService.getLogin(request));
         Example<FileSystem> requestFileSystem = Example.of(
                 FileSystem.builder()
-                        .parentId(parentId)
+                        .parentId(UUID.fromString(parentId))
                         .user(users)
                         .build()
         );
@@ -90,22 +90,23 @@ public class FileSystemServiceImpl implements FileSystemService {
     }
 
     @Override
-    public FileSystemDto getFileSystem(UUID fileSystemId) {
+    public FileSystemDto getFileSystem(String fileSystemId) {
         log.info("Start operation extracts fileSystem by fileSystemId: {}", fileSystemId);
-        FileSystem fileSystem = getFileSystemById(fileSystemId);
+        FileSystem fileSystem = getFileSystemById(UUID.fromString(fileSystemId));
         log.info("End operation extracts fileSystem by fileSystemId: {}", fileSystemId);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
     }
 
     @Override
-    public UUID deleteFileSystemById(UUID fileSystemId) {
-        fileSystemRepository.deleteById(fileSystemId);
-        return fileSystemId;
+    public UUID deleteFileSystemById(String fileSystemId) {
+        final UUID fileSystemUUID = UUID.fromString(fileSystemId);
+        fileSystemRepository.deleteById(fileSystemUUID);
+        return fileSystemUUID;
     }
 
     @Override
-    public FileSystem getFileByFileId(UUID fileId) {
-        return getFileSystemById(fileId);
+    public FileSystem getFileByFileId(String fileId) {
+        return getFileSystemById(UUID.fromString(fileId));
     }
 
     private FileSystem getFileSystemById(UUID id) {

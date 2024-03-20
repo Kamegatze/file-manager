@@ -6,7 +6,11 @@ import com.kamegatze.file.manager.dto.filesystem.FolderDto;
 import com.kamegatze.file.manager.models.FileSystem;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.validation.annotation.Validated;
 
 
@@ -19,9 +23,33 @@ public interface FileSystemService {
                                                HttpServletRequest httpServletRequest);
     FileSystemDto createSaveFileByFolderParentId(@Valid FileDto fileSystemDto,
                                                  HttpServletRequest httpServletRequest);
-    List<FileSystemDto> getChildrenByParentId(@NotNull UUID parentId,
+    List<FileSystemDto> getChildrenByParentId(@NotEmpty @NotBlank @NotNull
+                                              @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")
+                                              @Pattern(
+                                                      regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                                                      message = "incorrect uuid"
+                                              )
+                                              String parentId,
                                               HttpServletRequest httpServletRequest);
-    FileSystemDto getFileSystem(@NotNull UUID fileSystemId);
-    FileSystem getFileByFileId(@NotNull UUID fileId);
-    UUID deleteFileSystemById(@NotNull UUID fileSystemId);
+    FileSystemDto getFileSystem(@NotEmpty @NotBlank @NotNull
+                                @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")
+                                @Pattern(
+                                        regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                                        message = "incorrect uuid"
+                                )
+                                String fileSystemId);
+    FileSystem getFileByFileId(@NotEmpty @NotBlank @NotNull
+                               @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")
+                               @Pattern(
+                                       regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                                       message = "incorrect uuid"
+                               )
+                               String fileId);
+    UUID deleteFileSystemById(@NotEmpty @NotBlank @NotNull
+                              @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")
+                              @Pattern(
+                                      regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                                      message = "incorrect uuid"
+                              )
+                              String fileSystemId);
 }
