@@ -37,7 +37,7 @@ public class GlobalAdviceController {
     }
 
     @ExceptionHandler({AuthenticationException.class})
-    public ResponseEntity<ResponseDto> handleInvalidBearerTokenException(AuthenticationException exception) {
+    public ResponseEntity<ResponseDto> handleAuthenticationException(AuthenticationException exception) {
         ResponseDto responseDto = ResponseDto.builder()
                 .message(exception.getMessage())
                 .status(HttpStatus.UNAUTHORIZED)
