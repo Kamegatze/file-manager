@@ -30,6 +30,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -198,11 +199,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (!usersRepository.existsByLogin(login)) {
             throw new UserNotExistException(String.format("User with login: [%s] not exist", login));
         }
-
-        String accessToken = jwtService.generateAccess(usersDetailsService.loadUserByUsername(login));
-
+        UserDetails userDetails = usersDetailsService.loadUserByUsername(login);
+        String accessToken = jwtService.generateAccess(userDetails);
+        String refreshToken = jwtService.generateRefresh(userDetails);
         return JwtDto.builder()
-                .refreshToken(token)
+                .refreshToken(refreshToken)
                 .tokenAccess(accessToken)
                 .type(ETokenType.Bearer)
                 .build();
