@@ -247,11 +247,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if (!changePasswordDto.getPassword().equals(changePasswordDto.getPasswordRetry())) {
             throw new NotEqualsPasswordException("Field password and passwordRetry not equals");
         }
-        if(user.getPassword().equals(passwordEncoder.encode(changePasswordDto.getPassword()))) {
+        String password = passwordEncoder.encode(changePasswordDto.getPassword());
+        if(user.getPassword().equals(password)) {
             throw new EqualsPasswordException("Input other password. Current password equals previous password");
         }
         user.setRecoveryCode("");
-        user.setPassword(passwordEncoder.encode(changePasswordDto.getPassword()));
+        user.setPassword(password);
         usersRepository.save(user);
     }
 
