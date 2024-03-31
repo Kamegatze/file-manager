@@ -62,7 +62,7 @@ class AuthenticationMicroServiceControllerTest {
                         .build()
         );
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(ETypeTokenHeader.Authorization.name(), accessToken);
+        request.addHeader(ETypeTokenHeader.Authorization.name(), String.format("Bearer %s", accessToken));
         request.addHeader(ETypeTokenHeader.AuthorizationRefresh.name(), refreshToken);
         doReturn(authorityDtos).when(authorizationService).getAuthorityByRequest(request);
         //when

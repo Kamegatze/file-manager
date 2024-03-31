@@ -149,7 +149,7 @@ class AuthenticationControllerTest {
     void handleIsAuthenticationUser_RequestIsValid_ReturnsTrue() throws ParseException {
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(ETypeTokenHeader.Authorization.name(), accessToken);
+        request.addHeader(ETypeTokenHeader.Authorization.name(), String.format("Bearer %s", accessToken));
         request.addHeader(ETypeTokenHeader.AuthorizationRefresh.name(), refreshToken);
         doReturn(Boolean.TRUE)
                 .when(authorizationService).isAuthenticationUser(request);
