@@ -34,6 +34,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
@@ -172,7 +173,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 return Boolean.FALSE;
             }
             return Boolean.TRUE;
-        } catch (JwtValidationException exception) {
+        } catch (JwtException exception) {
             return Boolean.FALSE;
         }
     }
