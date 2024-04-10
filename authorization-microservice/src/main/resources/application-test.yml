@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:tc:postgresql:13:///authorization?TC_DAEMON=true
+
+  mail:
+    host: smtp.ethereal.email
+    port: 587
+    username: kayley.hahn@ethereal.email
+    password: 8KsAcqp3nVMXpqsmVq
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

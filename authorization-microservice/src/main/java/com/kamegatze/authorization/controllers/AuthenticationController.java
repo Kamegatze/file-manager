@@ -1,10 +1,8 @@
 package com.kamegatze.authorization.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.authorization.dto.UsersDto;
 import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
@@ -12,9 +10,9 @@ import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.services.AuthorizationService;
+import com.kamegatze.general.dto.response.ResponseDto;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -35,15 +32,13 @@ public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
     @PostMapping("/signup")
-    public ResponseEntity<Response> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri) throws UsersExistException {
-
+    public ResponseEntity<ResponseDto> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri)
+            throws UsersExistException {
         UsersDto usersSave = authorizationService.signup(usersDto);
-
-        Response response = Response.builder()
+        ResponseDto response = ResponseDto.builder()
                 .message("User was created")
-                .returnCode(202)
+                .status(HttpStatus.CREATED)
                 .build();
-
         return ResponseEntity.created(uri.path("/api/auth/info/user/{id}")
                 .build(Map.of("id", usersSave.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,36 +62,36 @@ public class AuthenticationController {
     }
 
     @GetMapping("/authentication")
-    public void handleAuthenticationUserUseRefreshToken(HttpServletRequest request, HttpServletResponse response)
-            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException, IOException {
+    public ResponseEntity<JwtDto> handleAuthenticationUserUseRefreshToken(HttpServletRequest request)
+            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException {
         JwtDto jwtDto = authorizationService.authenticationViaRefreshToken(request);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(
-                response.getOutputStream(), jwtDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jwtDto);
     }
 
     @PostMapping("/send-email-change-password")
-    public ResponseEntity<Response> handleSendEmailChangePassword(@RequestParam String loginOrEmail)
+    public ResponseEntity<ResponseDto> handleSendEmailChangePassword(@RequestParam String loginOrEmail)
             throws MessagingException {
         authorizationService.sendCode(loginOrEmail);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
-                        .returnCode(200)
+                .body(ResponseDto.builder()
+                        .status(HttpStatus.OK)
                         .message("Go to your mailbox to recover " +
                                 "your password")
                         .build());
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Response> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto)
+    public ResponseEntity<ResponseDto> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto)
             throws NotEqualsPasswordException, EqualsPasswordException {
         authorizationService.changePassword(changePasswordDto);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Response.builder()
+                .body(ResponseDto.builder()
                         .message("Your password change")
-                        .returnCode(200)
+                        .status(HttpStatus.OK)
                         .build());
     }
 }
