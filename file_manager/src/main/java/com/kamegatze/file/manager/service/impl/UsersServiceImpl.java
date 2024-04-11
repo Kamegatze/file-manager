@@ -63,4 +63,9 @@ public class UsersServiceImpl implements UsersService {
                 );
     }
 
+    @Override
+    public Users updateOrSaveUsers(Users users) {
+        return usersRepository.save(users);
+    }
+
 }

@@ -21,4 +21,6 @@ public interface UsersService {
                           @NotEmpty
                           @Size(min = 5, message = "The login need more 5 sign")
                           String login);
+
+    Users updateOrSaveUsers(Users users);
 }

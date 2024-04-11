@@ -3,10 +3,12 @@ package com.kamegatze.authorization.remote.security.filter;
 import com.kamegatze.authorization.remote.security.converter.HeaderAuthentication;
 import com.kamegatze.authorization.remote.security.converter.JwtRemoteAuthenticationConverter;
 import com.kamegatze.authorization.remote.security.exception.HttpInvalidJwtException;
+import com.kamegatze.authorization.remote.security.expired.check.ExpiredCheck;
 import com.kamegatze.authorization.remote.security.filter.model.Authority;
 import com.kamegatze.authorization.remote.security.http.entry.point.ExceptionEntryPoint;
 import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
@@ -25,7 +27,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -39,8 +40,10 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,19 +52,25 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final RestOperations restOperations;
     private final String urlIsAuthentication;
-    private final AuthenticationEntryPoint authenticationEntryPoint;
     private final AuthenticationFailureHandler authenticationFailureHandler;
     private final SecurityContextRepository securityContextRepository = new RequestAttributeSecurityContextRepository();
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
-    public JwtRemoteFilter(AuthenticationManager authenticationManager, RestOperations restOperations, String urlIsAuthentication, HandlerExceptionResolver handlerExceptionResolver) {
+
+    private final ExpiredCheck expiredCheck;
+
+    public JwtRemoteFilter(AuthenticationManager authenticationManager,
+                           RestOperations restOperations,
+                           String urlIsAuthentication,
+                           HandlerExceptionResolver handlerExceptionResolver,
+                           ExpiredCheck expiredCheck) {
         this.authenticationManager = authenticationManager;
         this.restOperations = restOperations;
         this.urlIsAuthentication = urlIsAuthentication;
-        this.authenticationEntryPoint = new ExceptionEntryPoint(handlerExceptionResolver);
+        this.expiredCheck = expiredCheck;
         this.authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
-                this.authenticationEntryPoint);
+                new ExceptionEntryPoint(handlerExceptionResolver));
     }
 
     @Override
@@ -78,7 +87,17 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         }
         List<Authority> authorities;
         try {
-            authorities = getAuthorities(request);
+            String token = Optional.ofNullable(
+                    request.getHeader(
+                            HeaderAuthentication.AUTHORIZATION.name()
+                    )
+            ).map(authorizationToken -> authorizationToken.substring(7))
+                    .orElseThrow(() -> new NoSuchElementException("Jwt token not found"));
+            if (expiredCheck.check(token)) {
+                authorities = getAuthoritiesFromToken(token);
+            } else {
+                authorities = getAuthorities(request);
+            }
         }
         catch (HttpClientErrorException exception) {
             authenticationFailureHandler.onAuthenticationFailure(request, response,
@@ -112,6 +131,18 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
             securityContextHolderStrategy.clearContext();
             authenticationFailureHandler.onAuthenticationFailure(request, response, failed);
         }
+    }
+
+    private List<Authority> getAuthoritiesFromToken(String token) {
+        JWTClaimsSet jwtClaimsSet;
+        try {
+            jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        String[] authorityArray = ((String) jwtClaimsSet.getClaim("authority")).split(" ");
+        return Arrays.asList(authorityArray).parallelStream()
+                .map(item -> new Authority(item.trim())).toList();
     }
 
     private MultiValueMap<String, String> getHttpHeaders(HttpServletRequest request) {

@@ -1,5 +1,6 @@
 package com.kamegatze.file.manager.configuration.security;
 
+import com.kamegatze.authorization.remote.security.expired.check.ExpiredCheck;
 import com.kamegatze.authorization.remote.security.filter.JwtRemoteFilter;
 import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
@@ -28,12 +29,14 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final ConfigurationRemoteServer configurationRemoteServer;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final ExpiredCheck expiredCheck;
     private Filter jwtRemoteFilter() throws Exception {
         return new JwtRemoteFilter(
             authenticationConfiguration.getAuthenticationManager(),
             new RestTemplate(),
             configurationRemoteServer.getUrl(),
-            handlerExceptionResolver
+            handlerExceptionResolver,
+            expiredCheck
         );
     }
     @Bean
