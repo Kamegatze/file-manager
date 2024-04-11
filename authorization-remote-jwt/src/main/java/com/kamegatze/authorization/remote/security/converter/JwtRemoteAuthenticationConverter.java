@@ -53,7 +53,7 @@ public class JwtRemoteAuthenticationConverter implements AuthenticationConverter
     public Authentication convert(HttpServletRequest request) {
         Optional<String> authorizationHeaderOptional = Optional.ofNullable(
                 request.getHeader(
-                        HeaderAuthentication.AUTHORIZATION.name()
+                        HeaderAuthentication.AUTHORIZATION.value()
                 )
         );
         if (authorizationHeaderOptional.isEmpty()) {

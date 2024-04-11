@@ -89,7 +89,7 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         try {
             String token = Optional.ofNullable(
                     request.getHeader(
-                            HeaderAuthentication.AUTHORIZATION.name()
+                            HeaderAuthentication.AUTHORIZATION.value()
                     )
             ).map(authorizationToken -> authorizationToken.substring(7))
                     .orElseThrow(() -> new NoSuchElementException("Jwt token not found"));
@@ -168,7 +168,7 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
     private Optional<Exception> validate(HttpServletRequest request) {
         Optional<String> authorizationHeaderOptional = Optional.ofNullable(
                 request.getHeader(
-                        HeaderAuthentication.AUTHORIZATION.name()
+                        HeaderAuthentication.AUTHORIZATION.value()
                 )
         );
         if (authorizationHeaderOptional.isEmpty()) {

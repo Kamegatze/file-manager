@@ -24,7 +24,7 @@ public class CorsConfiguration {
                                 HttpHeaders.CONTENT_TYPE,
                                 HttpHeaders.ACCEPT,
                                 HttpHeaders.AUTHORIZATION,
-                                HeaderAuthentication.AUTHORIZATION_REFRESH.name()
+                                HeaderAuthentication.AUTHORIZATION_REFRESH.value()
                         )
                         .allowedMethods(
                                 HttpMethod.GET.name(),

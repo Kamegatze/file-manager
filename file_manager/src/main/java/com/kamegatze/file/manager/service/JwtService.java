@@ -18,7 +18,7 @@ public interface JwtService {
 
     default String getToken(HttpServletRequest request) {
         Optional<String> getTokenOptional = Optional.ofNullable(
-                request.getHeader(HeaderAuthentication.AUTHORIZATION.name())
+                request.getHeader(HeaderAuthentication.AUTHORIZATION.value())
         );
         return getTokenOptional.map(token -> token.substring(7))
                 .orElseThrow(() -> new NoSuchElementException("Token not found in request"));
