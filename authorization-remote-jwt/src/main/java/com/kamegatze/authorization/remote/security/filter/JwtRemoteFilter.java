@@ -54,7 +54,6 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final RestOperations restOperations;
     private final String urlIsAuthentication;
-    private final AuthenticationEntryPoint authenticationEntryPoint;
     private final AuthenticationFailureHandler authenticationFailureHandler;
     private final SecurityContextRepository securityContextRepository = new RequestAttributeSecurityContextRepository();
 
@@ -71,10 +70,9 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         this.authenticationManager = authenticationManager;
         this.restOperations = restOperations;
         this.urlIsAuthentication = urlIsAuthentication;
-        this.authenticationEntryPoint = new ExceptionEntryPoint(handlerExceptionResolver);
         this.expiredCheck = expiredCheck;
         this.authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
-                this.authenticationEntryPoint);
+                new ExceptionEntryPoint(handlerExceptionResolver));
     }
 
     @Override
