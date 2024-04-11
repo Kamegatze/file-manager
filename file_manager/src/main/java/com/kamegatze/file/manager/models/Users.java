@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +35,12 @@ public class Users {
 
     @Column
     private String email;
+
+    @Column
+    private String token;
+
+    @Column
+    private Instant expired;
 
     @OneToMany(mappedBy = "user")
     private List<FileSystem> fileSystem;
