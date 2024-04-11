@@ -1,6 +1,7 @@
 package com.kamegatze.file.manager.configuration.security.cors;
 
 
+import com.kamegatze.authorization.remote.security.converter.HeaderAuthentication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,8 @@ public class CorsConfiguration {
                         .allowedHeaders(
                                 HttpHeaders.CONTENT_TYPE,
                                 HttpHeaders.ACCEPT,
-                                HttpHeaders.AUTHORIZATION
+                                HttpHeaders.AUTHORIZATION,
+                                HeaderAuthentication.AUTHORIZATION_REFRESH.name()
                         )
                         .allowedMethods(
                                 HttpMethod.GET.name(),
