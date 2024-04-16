@@ -18,6 +18,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -126,6 +127,18 @@ public class FileSystemServiceImpl implements FileSystemService {
                         login, root, Boolean.FALSE)
                 ));
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
+    }
+
+    @Override
+    public List<FileSystemDto> getChildrenByPath(String path, HttpServletRequest request) {
+        String login = jwtService.getLogin(request);
+        FileSystem fileSystem = fileSystemRepository.getFileSystemByPath(path, login)
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format(
+                                "FileSystem not found by {login: %s}, by {path: %s} and by {isFile: %s}",
+                                login, path, Boolean.FALSE)
+                ));
+        return getChildrenByParentId(fileSystem.getId().toString(), request);
     }
 
     private FileSystem getFileSystemById(UUID id) {

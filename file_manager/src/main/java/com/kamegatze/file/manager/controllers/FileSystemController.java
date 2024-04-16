@@ -116,4 +116,12 @@ public class FileSystemController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(fileSystem);
     }
+
+    @GetMapping("/children-by-path")
+    ResponseEntity<List<FileSystemDto>> handleChildrenByPath(@RequestParam String path, HttpServletRequest request) {
+        List<FileSystemDto> fileSystemDtoList = fileSystemService.getChildrenByPath(path, request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileSystemDtoList);
+    }
 }

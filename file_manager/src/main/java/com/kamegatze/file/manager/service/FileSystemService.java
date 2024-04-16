@@ -54,4 +54,6 @@ public interface FileSystemService {
                               String fileSystemId);
 
     FileSystemDto getRoot(HttpServletRequest request);
+
+    List<FileSystemDto> getChildrenByPath(@NotEmpty @NotBlank @NotNull String path, HttpServletRequest request);
 }
