@@ -40,5 +40,5 @@ public interface FileSystemRepository extends JpaRepository<FileSystem, UUID> {
         select id from get_children_by_parent_id
     )
     """, nativeQuery = true)
-    int deleteAllChildrenByParentId(@Param("parentId") String parentId);
+    void deleteAllChildrenByParentId(@Param("parentId") UUID parentId);
 }

@@ -101,6 +101,7 @@ public class FileSystemServiceImpl implements FileSystemService {
     @Override
     public UUID deleteFileSystemById(String fileSystemId) {
         final UUID fileSystemUUID = UUID.fromString(fileSystemId);
+        fileSystemRepository.deleteAllChildrenByParentId(fileSystemUUID);
         fileSystemRepository.deleteById(fileSystemUUID);
         return fileSystemUUID;
     }
