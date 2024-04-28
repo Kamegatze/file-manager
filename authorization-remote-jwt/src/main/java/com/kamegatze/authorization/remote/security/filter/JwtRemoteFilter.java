@@ -87,14 +87,17 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         }
         List<Authority> authorities;
         try {
-            String token = Optional.ofNullable(
+            Optional<String> token = Optional.ofNullable(
                     request.getHeader(
                             HeaderAuthentication.AUTHORIZATION.value()
                     )
-            ).map(authorizationToken -> authorizationToken.substring(7))
-                    .orElseThrow(() -> new NoSuchElementException("Jwt token not found"));
-            if (expiredCheck.check(token)) {
-                authorities = getAuthoritiesFromToken(token);
+            ).map(authorizationToken -> authorizationToken.substring(7));
+            if (token.isEmpty()) {
+                doFilter(request, response, filterChain);
+                return;
+            }
+            if (expiredCheck.check(token.get())) {
+                authorities = getAuthoritiesFromToken(token.get());
             } else {
                 authorities = getAuthorities(request);
             }

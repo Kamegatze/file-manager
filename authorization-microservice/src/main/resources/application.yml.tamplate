@@ -59,3 +59,7 @@ mail:
 
 url:
   change-password: http://localhost:4200/authentication/change-password
+
+springdoc:
+  swagger-ui:
+    path: /swagger/ui

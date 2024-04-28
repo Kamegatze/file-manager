@@ -24,7 +24,7 @@ repositories {
 }
 
 ext {
-
+    swagerVersion = '2.5.0'
 }
 
 dependencies {

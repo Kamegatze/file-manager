@@ -57,10 +57,12 @@ public class SecurityConfig {
                 .addFilterAt(jwtRemoteFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(authorization ->
-                    authorization.requestMatchers("/api/**")
-                        .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
-                        .anyRequest()
-                        .authenticated()
+                    authorization
+                            .requestMatchers("/swagger/**", "/v3/**").permitAll()
+                            .requestMatchers("/api/**")
+                            .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
+                            .anyRequest()
+                            .authenticated()
                 )
                 .build();
     }

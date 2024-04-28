@@ -19,6 +19,7 @@ allprojects {
     ext {
         nimbusJwt = '9.31'
         modelMapperVersion = '3.2.0'
+        swagerVersion = '2.5.0'
     }
 
     dependencies {
@@ -40,6 +41,7 @@ allprojects {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+        implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swagerVersion}"
     }
 
     dependencies {

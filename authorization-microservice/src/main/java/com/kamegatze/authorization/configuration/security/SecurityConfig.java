@@ -69,7 +69,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint()))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/api/auth/service/**").permitAll()
+                                .requestMatchers("/api/auth/service/**", "/swagger/**", "/v3/**").permitAll()
                                 .requestMatchers("/test", "/api/authentication/micro-service/**")
                                 .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                                 .anyRequest().authenticated()

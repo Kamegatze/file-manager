@@ -47,3 +47,7 @@ service:
       protocol: http
       port: 9200
       host: localhost
+
+springdoc:
+  swagger-ui:
+    path: /swagger/ui
