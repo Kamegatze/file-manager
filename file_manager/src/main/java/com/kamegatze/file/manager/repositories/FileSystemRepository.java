@@ -32,7 +32,7 @@ public interface FileSystemRepository extends JpaRepository<FileSystem, UUID> {
     where id in (
         with recursive get_children_by_parent_id(id, parent_id) as (
             select fs1.id, fs1.parent_id from file_system as fs1
-            where parent_id = 'ac52be4c-f9b5-464a-b299-90a7969d7bfc'
+            where parent_id = :parentId
             union all
             select fs2.id, fs2.parent_id from file_system as fs2
             join get_children_by_parent_id on get_children_by_parent_id.id = fs2.parent_id
