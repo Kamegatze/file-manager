@@ -12,20 +12,20 @@ import java.util.UUID;
 
 public interface FileSystemRepository extends JpaRepository<FileSystem, UUID> {
 
-    @Query(value = """
-        with recursive get_file_system_by_path(id, file, name, user_id, parent_id, is_file, path) as (
-            select fs1.id, fs1.file, fs1.name, fs1.user_id, fs1.parent_id, fs1.is_file, fs1.name as path from file_system as fs1
-            where name = 'root' and parent_id is null and user_id = (select id from users where login = :login)
-            union all
-            select fs2.id, fs2.file, fs2.name, fs2.user_id, fs2.parent_id, fs2.is_file, cast(get_file_system_by_path.path || '/' || fs2.name as text) from file_system as fs2
-            join get_file_system_by_path on get_file_system_by_path.id = fs2.parent_id
-        )
-        select *
-        from get_file_system_by_path
-        where path = :path
-    """, nativeQuery = true)
-    Optional<FileSystem> getFileSystemByPath(@Param("path") String path, @Param("login") String login);
+    /**
+     * Method for get FileSystem {@link FileSystem} item by login and path
+     * @param login login user for search file-system
+     * @param path path file-system
+     * @return {@link FileSystem} find
+     * */
+    Optional<FileSystem> findByUser_LoginAndPath(String login, String path);
 
+
+    /**
+     * Method for get all children by parentId
+     * @param parentId - id parent FileSystem
+     * @return {@link FileSystem} list file system
+     * */
     @Query(value = """
     select * from file_system
     where id in (
@@ -39,8 +39,12 @@ public interface FileSystemRepository extends JpaRepository<FileSystem, UUID> {
         select id from get_children_by_parent_id
     )
     """, nativeQuery = true)
-    List<FileSystem> getAllChildrenByParentId(@Param("parentId") UUID parentID);
+    List<FileSystem> getAllChildrenByParentId(@Param("parentId") UUID parentId);
 
+    /**
+     * Method for delete all children item in file system
+     * @param parentId id parent FileSystem {@link FileSystem}
+     * */
     @Modifying
     @Query(value = """
     delete from file_system

@@ -139,7 +139,7 @@ public class FileSystemServiceImpl implements FileSystemService {
     @Override
     public List<FileSystemDto> getChildrenByPath(String path, HttpServletRequest request) {
         String login = jwtService.getLogin(request);
-        FileSystem fileSystem = fileSystemRepository.getFileSystemByPath(path, login)
+        FileSystem fileSystem = fileSystemRepository.findByUser_LoginAndPath(login, path)
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format(
                                 "FileSystem not found by {login: %s}, by {path: %s} and by {isFile: %s}",
