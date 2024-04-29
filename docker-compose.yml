@@ -23,33 +23,33 @@ services:
       - '5433:5432'
     volumes:
       - file_manager:/var/lib/postgresql/file_manager
-  authorization-microservice:
-    container_name: authorization-microservice
-    build:
-      context: ./authorization-microservice
-    depends_on:
-      - kafka
-    ports:
-      - "9200:9200"
-    environment:
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://authorization_db:5432/authorization
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-  file_manager:
-    container_name: file_manager
-    build:
-      context: ./file_manager
-    depends_on:
-      - kafka
-    ports:
-      - "9000:9000"
-    environment:
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://file_manager_db:5432/file_manager
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SERVICE_AUTHENTICATION_IS-AUTHENTICATION_HOST=authorization-microservice
+#  authorization-microservice:
+#    container_name: authorization-microservice
+#    build:
+#      context: ./authorization-microservice
+#    depends_on:
+#      - kafka
+#    ports:
+#      - "9200:9200"
+#    environment:
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=postgres
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://authorization_db:5432/authorization
+#      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+#  file_manager:
+#    container_name: file_manager
+#    build:
+#      context: ./file_manager
+#    depends_on:
+#      - kafka
+#    ports:
+#      - "9000:9000"
+#    environment:
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=postgres
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://file_manager_db:5432/file_manager
+#      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+#      - SERVICE_AUTHENTICATION_IS-AUTHENTICATION_HOST=authorization-microservice
   zookeeper:
     container_name: zookeeper
     image: zookeeper:latest

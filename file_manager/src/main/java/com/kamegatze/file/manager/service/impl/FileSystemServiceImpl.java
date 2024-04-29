@@ -21,6 +21,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -152,9 +153,16 @@ public class FileSystemServiceImpl implements FileSystemService {
     public FileSystemDto renameFileSystem(RenameFileSystemDto renameFileSystemDto) {
         FileSystem fileSystem = getFileSystemById(renameFileSystemDto.getId());
         fileSystem.setName(renameFileSystemDto.getName());
-        String[] pathArray = fileSystem.getPath().split("/");
-        pathArray[pathArray.length - 1] = renameFileSystemDto.getName();
-        fileSystem.setPath(String.join("/", pathArray));
+        String[] pathParent = fileSystem.getPath().split("/");
+        pathParent[pathParent.length - 1] = renameFileSystemDto.getName();
+        fileSystem.setPath(String.join("/", pathParent));
+        List<FileSystem> children = fileSystemRepository.getAllChildrenByParentId(fileSystem.getId());
+        for (FileSystem item : children) {
+            String[] pathChildren = item.getPath().split("/");
+            pathChildren[pathParent.length - 1] = renameFileSystemDto.getName();
+            item.setPath(String.join("/", pathChildren));
+        }
+        fileSystemRepository.saveAll(children);
         return mapperClazz.mapperToClazz(fileSystemRepository.save(fileSystem), FileSystemDto.class);
     }
 
