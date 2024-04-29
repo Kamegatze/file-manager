@@ -152,6 +152,9 @@ public class FileSystemServiceImpl implements FileSystemService {
     public FileSystemDto renameFileSystem(RenameFileSystemDto renameFileSystemDto) {
         FileSystem fileSystem = getFileSystemById(renameFileSystemDto.getId());
         fileSystem.setName(renameFileSystemDto.getName());
+        String[] pathArray = fileSystem.getPath().split("/");
+        pathArray[pathArray.length - 1] = renameFileSystemDto.getName();
+        fileSystem.setPath(String.join("/", pathArray));
         return mapperClazz.mapperToClazz(fileSystemRepository.save(fileSystem), FileSystemDto.class);
     }
 

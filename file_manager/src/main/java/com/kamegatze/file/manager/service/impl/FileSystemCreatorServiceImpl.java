@@ -4,6 +4,7 @@ import com.kamegatze.file.manager.models.FileSystem;
 import com.kamegatze.file.manager.repositories.FileSystemRepository;
 import com.kamegatze.file.manager.service.FileSystemCreatorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,8 @@ import java.util.zip.ZipOutputStream;
 public class FileSystemCreatorServiceImpl implements FileSystemCreatorService {
 
     private final FileSystemRepository fileSystemRepository;
-    private static final String PATH_DEFAULT = "./file_manager/src/main/resources/temp-files-for-download";
+    @Value("${path.default}")
+    private String PATH_DEFAULT;
 
     @Override
     public byte[] creatZipArchiveFromFolderInDatabase(FileSystem fileSystem) {
