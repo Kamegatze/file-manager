@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +25,21 @@ public interface FileSystemRepository extends JpaRepository<FileSystem, UUID> {
         where path = :path
     """, nativeQuery = true)
     Optional<FileSystem> getFileSystemByPath(@Param("path") String path, @Param("login") String login);
+
+    @Query(value = """
+    select * from file_system
+    where id in (
+        with recursive get_children_by_parent_id(id, parent_id) as (
+            select fs1.id, fs1.parent_id from file_system as fs1
+            where parent_id = :parentId
+            union all
+            select fs2.id, fs2.parent_id from file_system as fs2
+            join get_children_by_parent_id on get_children_by_parent_id.id = fs2.parent_id
+        )
+        select id from get_children_by_parent_id
+    )
+    """, nativeQuery = true)
+    List<FileSystem> getAllChildrenByParentId(@Param("parentId") UUID parentID);
 
     @Modifying
     @Query(value = """

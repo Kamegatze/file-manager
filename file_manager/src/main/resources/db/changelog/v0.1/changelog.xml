@@ -7,4 +7,5 @@
     <include file="2024-02-18-create-table-file_system.xml" relativeToChangelogFile="true"/>
     <include file="2024-02-25-add-column-users-table.xml" relativeToChangelogFile="true"/>
     <include file="2024-04-11-add-column-users-table.xml" relativeToChangelogFile="true"/>
+    <include file="2024-04-29-add-column-file-system.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -37,6 +37,7 @@ public class UsersServiceImpl implements UsersService {
                     .user(users)
                     .isFile(Boolean.FALSE)
                     .name("root")
+                    .path("/")
                     .build()
             );
         } catch (JsonProcessingException e) {

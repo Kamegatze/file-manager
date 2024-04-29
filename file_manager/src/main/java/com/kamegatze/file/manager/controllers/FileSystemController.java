@@ -1,8 +1,10 @@
 package com.kamegatze.file.manager.controllers;
 
+import com.kamegatze.file.manager.dto.filesystem.AllContentFolder;
 import com.kamegatze.file.manager.dto.filesystem.FileDto;
 import com.kamegatze.file.manager.dto.filesystem.FileSystemDto;
 import com.kamegatze.file.manager.dto.filesystem.FolderDto;
+import com.kamegatze.file.manager.dto.filesystem.RenameFileSystemDto;
 import com.kamegatze.file.manager.models.FileSystem;
 import com.kamegatze.file.manager.service.FileSystemService;
 import com.kamegatze.general.dto.response.ResponseDtoByDelete;
@@ -123,5 +125,22 @@ public class FileSystemController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(fileSystemDtoList);
+    }
+
+    @PostMapping("/rename-file-system")
+    ResponseEntity<FileSystemDto> handleRenameFileSystem(@RequestBody RenameFileSystemDto renameFileSystemDto) {
+        FileSystemDto fileSystemDto = fileSystemService.renameFileSystem(renameFileSystemDto);
+        return ResponseEntity.ok(fileSystemDto);
+    }
+
+    @GetMapping("/download-all-content-folder/{fileSystemId}")
+    ResponseEntity<byte[]> handleDownloadAllContentFolder(
+            @PathVariable("fileSystemId") String fileSystemId) {
+        AllContentFolder allContentFolder = fileSystemService.getAllContentFolder(fileSystemId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + allContentFolder.getName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(allContentFolder.getContent().length)
+                .body(allContentFolder.getContent());
     }
 }

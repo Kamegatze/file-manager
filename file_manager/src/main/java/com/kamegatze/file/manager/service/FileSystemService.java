@@ -1,8 +1,10 @@
 package com.kamegatze.file.manager.service;
 
+import com.kamegatze.file.manager.dto.filesystem.AllContentFolder;
 import com.kamegatze.file.manager.dto.filesystem.FileDto;
 import com.kamegatze.file.manager.dto.filesystem.FileSystemDto;
 import com.kamegatze.file.manager.dto.filesystem.FolderDto;
+import com.kamegatze.file.manager.dto.filesystem.RenameFileSystemDto;
 import com.kamegatze.file.manager.models.FileSystem;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -56,4 +58,13 @@ public interface FileSystemService {
     FileSystemDto getRoot(HttpServletRequest request);
 
     List<FileSystemDto> getChildrenByPath(@NotEmpty @NotBlank @NotNull String path, HttpServletRequest request);
+
+    FileSystemDto renameFileSystem(RenameFileSystemDto renameFileSystemDto);
+
+    AllContentFolder getAllContentFolder(@NotEmpty @NotBlank @NotNull
+                                         @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")
+                                         @Pattern(
+                                                 regexp = "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+                                                 message = "incorrect uuid"
+                                         ) String fileSystemId);
 }

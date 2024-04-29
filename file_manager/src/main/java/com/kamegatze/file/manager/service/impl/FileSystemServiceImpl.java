@@ -1,12 +1,15 @@
 package com.kamegatze.file.manager.service.impl;
 
+import com.kamegatze.file.manager.dto.filesystem.AllContentFolder;
 import com.kamegatze.file.manager.dto.filesystem.FileDto;
 import com.kamegatze.file.manager.dto.filesystem.FileSystemDto;
 import com.kamegatze.file.manager.dto.filesystem.FolderDto;
+import com.kamegatze.file.manager.dto.filesystem.RenameFileSystemDto;
 import com.kamegatze.file.manager.exception.FileSystemExistByNameAndUserException;
 import com.kamegatze.file.manager.models.FileSystem;
 import com.kamegatze.file.manager.models.Users;
 import com.kamegatze.file.manager.repositories.FileSystemRepository;
+import com.kamegatze.file.manager.service.FileSystemCreatorService;
 import com.kamegatze.file.manager.service.FileSystemService;
 import com.kamegatze.file.manager.service.JwtService;
 import com.kamegatze.file.manager.service.UsersService;
@@ -18,7 +21,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -32,6 +34,8 @@ public class FileSystemServiceImpl implements FileSystemService {
     private final UsersService usersService;
     private final JwtService jwtService;
     private final MapperClazz mapperClazz;
+    private final FileSystemCreatorService fileSystemCreatorService;
+
     private final String root = "root";
     @Override
     public FileSystemDto createFolderByFolderParentId(FolderDto fileSystemDto,
@@ -49,6 +53,7 @@ public class FileSystemServiceImpl implements FileSystemService {
 
         fileSystem.setUser(users);
         fileSystem.setIsFile(Boolean.FALSE);
+        fileSystem.setPath(getPath(getFileSystemById(fileSystemDto.getParentId()), fileSystemDto.getName()));
         fileSystem = fileSystemRepository.save(fileSystem);
         log.info("End operation save folder: {}", fileSystemDto);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
@@ -70,6 +75,7 @@ public class FileSystemServiceImpl implements FileSystemService {
 
         fileSystem.setUser(users);
         fileSystem.setIsFile(Boolean.TRUE);
+        fileSystem.setPath(getPath(getFileSystemById(fileSystemDto.getParentId()), fileSystemDto.getName()));
         fileSystem = fileSystemRepository.save(fileSystem);
         log.info("End operation save file: {}", fileSystemDto);
         return mapperClazz.mapperToClazz(fileSystem, FileSystemDto.class);
@@ -140,6 +146,30 @@ public class FileSystemServiceImpl implements FileSystemService {
                                 login, path, Boolean.FALSE)
                 ));
         return getChildrenByParentId(fileSystem.getId().toString(), request);
+    }
+
+    @Override
+    public FileSystemDto renameFileSystem(RenameFileSystemDto renameFileSystemDto) {
+        FileSystem fileSystem = getFileSystemById(renameFileSystemDto.getId());
+        fileSystem.setName(renameFileSystemDto.getName());
+        return mapperClazz.mapperToClazz(fileSystemRepository.save(fileSystem), FileSystemDto.class);
+    }
+
+    @Override
+    public AllContentFolder getAllContentFolder(String fileSystemId) {
+        byte[] content = fileSystemCreatorService.creatZipArchiveFromFolderInDatabase(getFileSystemById(UUID.fromString(fileSystemId)));
+        String name = getFileSystemById(UUID.fromString(fileSystemId)).getName() + ".zip";
+        return AllContentFolder.builder()
+                .content(content)
+                .name(name)
+                .build();
+    }
+
+    private String getPath(FileSystem parent, String nameChildren) {
+        if (parent.getName().equals("root")) {
+            return String.format("%s%s", parent.getPath(), nameChildren);
+        }
+        return String.format("%s/%s", parent.getPath(), nameChildren);
     }
 
     private FileSystem getFileSystemById(UUID id) {
