@@ -44,6 +44,9 @@ public class FileSystem {
     @Column
     private UUID parentId;
 
+    @Column
+    private String path;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
