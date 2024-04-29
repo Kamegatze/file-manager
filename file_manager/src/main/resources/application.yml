@@ -2,6 +2,10 @@ server:
   port: 9000
 
 spring:
+
+  profiles:
+    active: production
+
   datasource:
     driver-class-name: org.postgresql.Driver
     username: postgres
@@ -51,3 +55,6 @@ service:
 springdoc:
   swagger-ui:
     path: /swagger/ui
+
+path:
+  default: ./src/main/resources/temp-files-for-download
