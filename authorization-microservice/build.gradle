@@ -24,10 +24,11 @@ repositories {
 }
 
 ext {
-    swagerVersion = '2.5.0'
+    set('springCloudVersion', "2023.0.1")
 }
 
 dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation project(':authorization-remote-jwt')
     implementation project(":general-dto")
     runtimeOnly 'org.postgresql:postgresql'
@@ -36,6 +37,12 @@ dependencies {
     implementation 'com.graphql-java-kickstart:graphql-spring-boot-starter:15.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail:3.1.2'
     implementation 'org.thymeleaf:thymeleaf-spring6:3.1.1.RELEASE'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('test') {

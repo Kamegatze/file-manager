@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: authorization-microservice
+            uri: http://localhost:9200
+            predicates:
+              - Path=/api/auth/**
+          - id: file-manager
+            uri: http://localhost:9000
+            predicates:
+              - Path=/api/file-system/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
