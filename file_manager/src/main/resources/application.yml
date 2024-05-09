@@ -39,7 +39,7 @@ spring:
         max-request-size: 5GB
 
   application:
-    name: file_manager
+    name: file-manager
 
 eureka:
   client:
@@ -61,8 +61,10 @@ service:
       host: localhost
 
 springdoc:
+  api-docs:
+    path: '/${spring.application.name}/v3/api-docs'
   swagger-ui:
-    path: /swagger/ui
+    path: '/${spring.application.name}/swagger-ui.html'
 
 path:
   default: ./src/main/resources/temp-files-for-download

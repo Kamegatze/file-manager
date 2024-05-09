@@ -11,13 +11,27 @@ spring:
           - id: authorization-microservice
             uri: http://localhost:9200
             predicates:
-              - Path=/api/auth/**
+              - Path=/api/auth/**,/authorization-microservice/**
           - id: file-manager
             uri: http://localhost:9000
             predicates:
-              - Path=/api/file-system/**
+              - Path=/api/file-system/**,/file-manager/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: '/${spring.cloud.gateway.mvc.routes[0].id}/v3/api-docs'
+        name: authorization service
+      - url: '/${spring.cloud.gateway.mvc.routes[1].id}/v3/api-docs'
+        name: file manager service

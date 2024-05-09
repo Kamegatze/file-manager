@@ -6,6 +6,7 @@ import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticat
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
 import com.kamegatze.file.manager.service.UsersService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +31,10 @@ public class SecurityConfig {
     private final ConfigurationRemoteServer configurationRemoteServer;
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final ExpiredCheck expiredCheck;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
     private Filter jwtRemoteFilter() throws Exception {
         return new JwtRemoteFilter(
             authenticationConfiguration.getAuthenticationManager(),
@@ -58,7 +63,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(authorization ->
                     authorization
-                            .requestMatchers("/swagger/**", "/v3/**").permitAll()
+                            .requestMatchers(String.format("/%s/**", applicationName)).permitAll()
                             .requestMatchers("/api/**")
                             .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                             .anyRequest()

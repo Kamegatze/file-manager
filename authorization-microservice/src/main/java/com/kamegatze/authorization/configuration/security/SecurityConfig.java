@@ -3,6 +3,7 @@ package com.kamegatze.authorization.configuration.security;
 import com.kamegatze.authorization.configuration.security.http.entry.point.ExceptionEntryPointContainer;
 import com.kamegatze.authorization.model.EAuthority;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -36,6 +37,8 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final ExceptionEntryPointContainer exceptionEntryPointContainer;
 
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     private DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -69,8 +72,8 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint()))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/api/auth/service/**", "/swagger/**", "/v3/**").permitAll()
-                                .requestMatchers("/test", "/api/authentication/micro-service/**")
+                                .requestMatchers("/api/auth/service/**", String.format("/%s/**", applicationName)).permitAll()
+                                .requestMatchers("/api/authentication/micro-service/**")
                                 .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                                 .anyRequest().authenticated()
                 )

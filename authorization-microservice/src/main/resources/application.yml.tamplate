@@ -12,10 +12,9 @@ spring:
               enable: true
 
   datasource:
-    driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
-    url: jdbc:postgresql://localhost:5432/authorization
+    url: jdbc:postgresql://dev-server-kamegatze:5434/authorization
 
   jpa:
     hibernate:
@@ -31,16 +30,28 @@ spring:
       enabled: true
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: dev-server-kamegatze:29092
     topics:
       save:
         users: save-users
 
+  application:
+    name: authorization-microservice
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
+
 logging:
   level:
+    reactor:
+      debug
     org:
       springframework:
-        security: info
+        security: debug
+    web: debug
 
 rsa:
   private-key: classpath:certs/private.pem
@@ -52,7 +63,7 @@ app:
   refresh-token: 1440
 
 mail:
-  path: templates/email/
+  path: src/main/resources/templates/email/
   suffix: .html
   template-mode: HTML5
   encoding: UTF-8
@@ -61,5 +72,7 @@ url:
   change-password: http://localhost:4200/authentication/change-password
 
 springdoc:
+  api-docs:
+    path: '/${spring.application.name}/v3/api-docs'
   swagger-ui:
-    path: /swagger/ui
+    path: '/${spring.application.name}/swagger-ui.html'
