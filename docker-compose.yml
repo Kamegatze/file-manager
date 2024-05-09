@@ -77,8 +77,17 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  email:
+    container_name: email
+    image: mailserver2/mailserver:latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - email:/var/lib/email
+
 volumes:
   authorization:
   file_manager:
   kafka:
   zookeeper:
+  email:
