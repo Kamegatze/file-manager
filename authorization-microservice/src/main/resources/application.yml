@@ -1,0 +1,55 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kamegatze.send.file.manager@kamegatze.com
+    password: kamegatze
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/authorization
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog.xml
+    enabled: true
+
+  graphql:
+    graphiql:
+      enabled: true
+
+logging:
+  level:
+    org:
+      springframework:
+        security: info
+
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem
+
+app:
+  name-application: authorization-file-manager
+  access-token: 30
+  refresh-token: 1440
+
+mail:
+  path: authorization-microservice/src/main/resources/templates/email/
+  suffix: .html
+  template-mode: HTML
+  encoding: UTF-8
+
+url:
+  change-password: http://localhost:4200/authentication/change-password
