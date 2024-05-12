@@ -62,6 +62,7 @@ services:
     volumes:
       - zookeeper:/var/lib/zookeeper
   kafka-file-manager:
+    container_name: kafka-file-manager
     image: bitnami/kafka:latest
     depends_on:
       - zookeeper-file-manager
@@ -73,7 +74,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-file-manager:2181
       KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://192.168.0.107:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-file-manager:9092,PLAINTEXT_HOST://192.168.0.107:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
