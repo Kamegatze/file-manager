@@ -25,6 +25,9 @@ repositories {
 
 ext {
     set('springCloudVersion', "2023.0.1")
+    set('aerogearOtp', '1.0.0')
+    set('graphQL', '15.1.0')
+    set('emailStarter', '3.1.2')
 }
 
 dependencies {
@@ -34,9 +37,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
     testImplementation 'org.springframework.graphql:spring-graphql-test'
-    implementation 'com.graphql-java-kickstart:graphql-spring-boot-starter:15.1.0'
-    implementation 'org.springframework.boot:spring-boot-starter-mail:3.1.2'
+    implementation "com.graphql-java-kickstart:graphql-spring-boot-starter:${graphQL}"
+    implementation "org.springframework.boot:spring-boot-starter-mail:${emailStarter}"
     implementation 'org.thymeleaf:thymeleaf-spring6:3.1.1.RELEASE'
+    implementation "org.jboss.aerogear:aerogear-otp-java:${aerogearOtp}"
 }
 
 dependencyManagement {

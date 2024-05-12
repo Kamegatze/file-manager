@@ -1,6 +1,9 @@
+server:
+  port: 9200
+
 spring:
   mail:
-    host: smtp.gmail.com
+    host: dev-server-kamegatze
     port: 587
     username: kamegatze.send.file.manager@kamegatze.com
     password: kamegatze
@@ -15,7 +18,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
-    url: jdbc:postgresql://localhost:5432/authorization
+    url: jdbc:postgresql://dev-server-kamegatze:5434/authorization
 
   jpa:
     hibernate:
@@ -29,6 +32,20 @@ spring:
   graphql:
     graphiql:
       enabled: true
+
+  kafka:
+    bootstrap-servers: dev-server-kamegatze:29092
+    topics:
+      save:
+        users: save-users
+
+  application:
+    name: authorization-microservice
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
 
 logging:
   level:
@@ -53,3 +70,9 @@ mail:
 
 url:
   change-password: http://localhost:4200/authentication/change-password
+
+springdoc:
+  api-docs:
+    path: '/${spring.application.name}/v3/api-docs'
+  swagger-ui:
+    path: '/${spring.application.name}/swagger-ui.html'
