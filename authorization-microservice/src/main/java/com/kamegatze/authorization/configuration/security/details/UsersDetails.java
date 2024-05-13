@@ -1,6 +1,7 @@
 package com.kamegatze.authorization.configuration.security.details;
 
 import com.kamegatze.authorization.model.Users;
+import lombok.Data;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,12 +9,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-
+@Data
 public class UsersDetails implements UserDetails {
 
     private final Users users;
-
-    private final ModelMapper model = new ModelMapper();
 
     private final List<? extends GrantedAuthority> authorityList;
 
