@@ -7,12 +7,21 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
+import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -35,7 +44,7 @@ public class BeanConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return  PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
     @Bean
     public JwtDecoder nimbusJwtDecoder() {
@@ -53,5 +62,20 @@ public class BeanConfig {
     @Bean
     public JwtIssuerValidator jwtValidator() {
         return new JwtIssuerValidator(issuer);
+    }
+
+    @Bean
+    public SecretGenerator secretGenerator(){
+        return new DefaultSecretGenerator(16);
+    }
+
+    @Bean
+    public QrGenerator qrGenerator(){
+        return new ZxingPngQrGenerator();
+    }
+
+    @Bean
+    public CodeVerifier codeVerifier(){
+        return new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
     }
 }
