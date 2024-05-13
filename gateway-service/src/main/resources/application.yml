@@ -11,7 +11,7 @@ spring:
           - id: authorization-microservice
             uri: http://localhost:9200
             predicates:
-              - Path=/api/auth/**,/authorization-microservice/**
+              - Path=/api/auth/**,/authorization-microservice/**, /account/**
           - id: file-manager
             uri: http://localhost:9000
             predicates:
