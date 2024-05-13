@@ -51,7 +51,10 @@ public class Users {
     private String email;
 
     @Column
-    private String recoveryCode;
+    private String secret;
+
+    @Column(name = "is_enable_2fa")
+    private boolean isEnable2fa;
 
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "users_authority",
