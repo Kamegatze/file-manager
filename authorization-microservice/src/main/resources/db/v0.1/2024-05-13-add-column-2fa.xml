@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="2024-05-13-add-column-2fa" author="ShirayevAleksey">
+        <preConditions>
+            <not>
+                <columnExists tableName="users" columnName="is_enable_2fa"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="users">
+            <column name="is_enable_2fa" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="secret" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>
