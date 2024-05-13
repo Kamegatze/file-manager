@@ -70,16 +70,14 @@ public class AuthenticationController {
                 .body(jwtDto);
     }
 
-    @PostMapping("/send-email-change-password")
-    public ResponseEntity<ResponseDto> handleSendEmailChangePassword(@RequestParam String loginOrEmail)
-            throws MessagingException {
-        authorizationService.sendCode(loginOrEmail);
+    @PostMapping("/send-2fa-code")
+    public ResponseEntity<ResponseDto> handleSendEmailChangePassword(@RequestParam String code, @RequestParam String login) {
+        authorizationService.isUserValidateAuthenticationCode(code, login);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ResponseDto.builder()
                         .status(HttpStatus.OK)
-                        .message("Go to your mailbox to recover " +
-                                "your password")
+                        .message("Is correct authentication code")
                         .build());
     }
 
