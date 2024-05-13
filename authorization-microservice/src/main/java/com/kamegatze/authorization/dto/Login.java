@@ -25,6 +25,6 @@ public class Login {
     @NotEmpty
     @NotBlank
     @NotNull
-    @Size(min = 8, message = "Your password need more 8 sign")
+    @Size(min = 6, message = "Your password need more 8 sign")
     private String password;
 }
