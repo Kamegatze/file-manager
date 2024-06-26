@@ -51,6 +51,7 @@ services:
 #      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-file-manager:9092
 #     - SERVICE_AUTHENTICATION_IS-AUTHENTICATION_HOST=authorization-microservice
   zookeeper-file-manager:
+    restart: always
     container_name: zookeeper-file-manager
     image: zookeeper:latest
     environment:
@@ -62,6 +63,7 @@ services:
     volumes:
       - zookeeper:/var/lib/zookeeper
   kafka-file-manager:
+    restart: always
     container_name: kafka-file-manager
     image: bitnami/kafka:latest
     depends_on:
