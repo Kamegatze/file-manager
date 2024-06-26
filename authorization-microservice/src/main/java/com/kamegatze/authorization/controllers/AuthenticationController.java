@@ -1,17 +1,14 @@
 package com.kamegatze.authorization.controllers;
 
-import com.kamegatze.authorization.dto.ChangePasswordDto;
+import com.kamegatze.authorization.dto.InfoAboutUser;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
-import com.kamegatze.authorization.exception.EqualsPasswordException;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.services.AuthorizationService;
 import com.kamegatze.general.dto.response.ResponseDto;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +28,13 @@ import java.util.Map;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
+
+    @GetMapping("/info-user-by-login")
+    public ResponseEntity<InfoAboutUser> handleExistUserByLogin(@RequestParam(value = "login", required = true) String login) {
+        InfoAboutUser infoAboutUser = authorizationService.getInfoAboutUserByLogin(login);
+        return ResponseEntity.ok(infoAboutUser);
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto> handleSignUpUser(@RequestBody UsersDto usersDto, UriComponentsBuilder uri)
             throws UsersExistException {
@@ -68,28 +72,5 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
-    }
-
-    @PostMapping("/send-2fa-code")
-    public ResponseEntity<ResponseDto> handleSendEmailChangePassword(@RequestParam String code, @RequestParam String login) {
-        authorizationService.isUserValidateAuthenticationCode(code, login);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ResponseDto.builder()
-                        .status(HttpStatus.OK)
-                        .message("Is correct authentication code")
-                        .build());
-    }
-
-    @PostMapping("/change-password")
-    public ResponseEntity<ResponseDto> handleChangePassword(@RequestBody ChangePasswordDto changePasswordDto)
-            throws NotEqualsPasswordException, EqualsPasswordException {
-        authorizationService.changePassword(changePasswordDto);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ResponseDto.builder()
-                        .message("Your password change")
-                        .status(HttpStatus.OK)
-                        .build());
     }
 }

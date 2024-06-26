@@ -5,7 +5,6 @@ import com.kamegatze.authorization.configuration.security.details.UsersDetailsSe
 import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.dto.mfa.MFADto;
 import com.kamegatze.authorization.exception.Invalid2FaAuthenticationException;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -22,12 +21,10 @@ import com.kamegatze.authorization.services.MFATokenService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,20 +38,13 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import com.kamegatze.authorization.exception.EqualsPasswordException;
 
 @Service
 @Validated
@@ -72,8 +62,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtIssuerValidator jwtValidator;
     private final ClientTransfer<Object> clientTransfer;
     private final MFATokenService mfaTokenService;
-
-    private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
@@ -123,7 +111,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
-                        login.getPassword()
+                        login.getCredentials()
                 )
         );
 
@@ -210,6 +198,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isExistUser(String loginOrEmail) {
+        String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
         boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
@@ -232,18 +221,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void changePassword(ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException {
-//        Users user = usersRepository.findByRecoveryCode(changePasswordDto.getRecoveryCode())
-//                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: \"%s\"", changePasswordDto.getRecoveryCode())));
-//        if (!changePasswordDto.getPassword().equals(changePasswordDto.getPasswordRetry())) {
-//            throw new NotEqualsPasswordException("Field password and passwordRetry not equals");
-//        }
-//        String password = passwordEncoder.encode(changePasswordDto.getPassword());
-//        if(user.getPassword().equals(password)) {
-//            throw new EqualsPasswordException("Input other password. Current password equals previous password");
-//        }
-//        user.setPassword(password);
-//        usersRepository.save(user);
+    public void changePassword(ChangePasswordDto changePasswordDto) {
+
     }
 
     @Override
@@ -279,6 +258,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         users.setEnable2fa(true);
         isUserValidateAuthenticationCode(code, users.getLogin());
         usersRepository.save(users);
+    }
+
+    @Override
+    public InfoAboutUser getInfoAboutUserByLogin(String login) {
+        Users users = usersRepository.findByLogin(login)
+                .orElseThrow(
+                        () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))
+                );
+
+        return new InfoAboutUser(users.getLogin(), users.isEnable2fa());
     }
 
     private Users getUserViaHttpRequest(HttpServletRequest request) {

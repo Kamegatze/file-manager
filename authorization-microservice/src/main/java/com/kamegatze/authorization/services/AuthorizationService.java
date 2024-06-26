@@ -7,7 +7,6 @@ import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -44,4 +43,6 @@ public interface AuthorizationService {
     MFADto set2FAAuthentication(HttpServletRequest request);
 
     void checkMFAValidateCodeAndEnableAuthorizationViaMFA(String code, HttpServletRequest request);
+
+    InfoAboutUser getInfoAboutUserByLogin(String login);
 }
