@@ -29,6 +29,7 @@ ext {
     set('graphQL', '15.1.0')
     set('emailStarter', '3.1.2')
     set("totp", "1.7.1")
+    set('swaggerVersion', '2.5.0')
 }
 
 dependencies {
@@ -43,6 +44,7 @@ dependencies {
     implementation 'org.thymeleaf:thymeleaf-spring6:3.1.1.RELEASE'
     implementation "org.jboss.aerogear:aerogear-otp-java:${aerogearOtp}"
     implementation "dev.samstevens.totp:totp:${totp}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}"
 }
 
 dependencyManagement {
