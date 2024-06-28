@@ -10,3 +10,12 @@ version = '1.0'
 test {
     useJUnitPlatform()
 }
+
+ext {
+    set('swaggerAnnotationsVersion', '2.2.22')
+}
+
+dependencies {
+    implementation "io.swagger.core.v3:swagger-annotations:${swaggerAnnotationsVersion}"
+
+}

@@ -30,7 +30,7 @@ public interface AuthorizationService {
     JwtDto authenticationViaRefreshToken(HttpServletRequest request)
             throws RefreshTokenIsNullException, ParseException, InvalidBearerTokenException, UserNotExistException;
 
-    Boolean isExistUser(@NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 5 sign")
+    Boolean isExistUser(@NotBlank @NotEmpty @NotNull @Size(min = 5, message = "Your login or email need more 4 sign")
                         String loginOrEmail);
 
     void isUserValidateAuthenticationCode(@NotBlank @NotEmpty @NotNull @Size(min = 6, max = 6, message = "Your code must 6 sign")
@@ -42,7 +42,8 @@ public interface AuthorizationService {
 
     MFADto set2FAAuthentication(HttpServletRequest request);
 
-    void checkMFAValidateCodeAndEnableAuthorizationViaMFA(String code, HttpServletRequest request);
+    void checkMFAValidateCodeAndEnableAuthorizationViaMFA(@Size(min = 6, message = "Your login need more 5 sign") String code,
+                                                          HttpServletRequest request);
 
-    InfoAboutUser getInfoAboutUserByLogin(String login);
+    InfoAboutUser getInfoAboutUserByLogin(@Size(min = 5, message = "Your login need more 4 sign") String login);
 }
