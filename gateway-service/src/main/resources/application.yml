@@ -30,11 +30,11 @@ spring:
         - id: authorization-microservice
           uri: http://localhost:9200
           predicates:
-            - Path=/api/v1/**
+            - Path=/api/v1/**, /authorization-microservice/**
         - id: file-manager
           uri: http://localhost:9000
           predicates:
-            - Path=/api/file-system/**,/file-manager/**
+            - Path=/api/v1/**, /file-manager/**
 
 eureka:
   client:

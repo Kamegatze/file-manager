@@ -18,19 +18,16 @@ import java.text.ParseException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/authentication/micro-service")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/authentication/micro-service")
 @Tag(name = "AuthenticationMicroService", description = "Work with authentication for microservice")
 public class AuthenticationMicroServiceController {
 
     private final AuthorizationService authorizationService;
 
-    @Operation(
-        summary = "Get authority via token access",
-        description = "Get authority via token access in headers request"
-    )
     @SecurityRequirement(name = "JWT")
     @GetMapping("/is-authentication")
+    @Operation(summary = "Get authority via token access", description = "Get authority via token access in headers request")
     public ResponseEntity<List<AuthorityDto>> handleIsAuthentication(HttpServletRequest request) throws ParseException {
         List<AuthorityDto> authorityDtos = authorizationService.getAuthorityByRequest(request);
         return ResponseEntity.status(HttpStatus.OK)

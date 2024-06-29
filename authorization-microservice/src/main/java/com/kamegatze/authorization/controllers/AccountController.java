@@ -16,29 +16,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/account")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/account")
 @Tag(name = "Account", description = "Work with account user")
 public class AccountController {
 
     private final AuthorizationService authorizationService;
 
-    @Operation(
-            summary = "Generate secret key for 2fa",
-            description = "Generate secret key for 2fa and save secret key in database"
-    )
     @SecurityRequirement(name = "JWT")
     @GetMapping("/set-2fa-authentication")
+    @Operation(summary = "Generate secret key for 2fa", description = "Generate secret key for 2fa and save secret key in database")
     public ResponseEntity<MFADto> handleSet2FAAuthentication(HttpServletRequest request) {
         return ResponseEntity.ok(authorizationService.set2FAAuthentication(request));
     }
 
-    @Operation(
-            summary = "Check code generate via secret key and turn on 2fa",
-            description = "Check code generate via secret key and turn on 2fa"
-    )
     @SecurityRequirement(name = "JWT")
     @GetMapping("/save-2fa-authentication")
+    @Operation(summary = "Check code generate via secret key and turn on 2fa", description = "Check code generate via secret key and turn on 2fa")
     public ResponseEntity<ResponseDto> handleSave2FAAuthentication(@RequestParam(name = "code", required = true)
                                                                    @Parameter(description = "code generation via authenticator",
                                                                            name = "code",
