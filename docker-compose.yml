@@ -51,7 +51,6 @@ services:
 #      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-file-manager:9092
 #     - SERVICE_AUTHENTICATION_IS-AUTHENTICATION_HOST=authorization-microservice
   zookeeper-file-manager:
-    restart: always
     container_name: zookeeper-file-manager
     image: zookeeper:latest
     environment:
@@ -63,8 +62,6 @@ services:
     volumes:
       - zookeeper:/var/lib/zookeeper
   kafka-file-manager:
-    restart: always
-    container_name: kafka-file-manager
     image: bitnami/kafka:latest
     depends_on:
       - zookeeper-file-manager
@@ -75,10 +72,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-file-manager:2181
-      KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-file-manager:9092,PLAINTEXT_HOST://192.168.0.107:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL_DIFFERENT_HOST://:29092,EXTERNAL_SAME_HOST://:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://localhost:9092,EXTERNAL_SAME_HOST://localhost:29093,EXTERNAL_DIFFERENT_HOST://dev-server-kamegatze:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL_DIFFERENT_HOST:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
 
