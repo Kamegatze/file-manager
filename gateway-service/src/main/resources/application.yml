@@ -4,34 +4,52 @@ server:
 spring:
   application:
     name: gateway-service
+  main:
+    web-application-type: reactive
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: authorization-microservice
-            uri: http://localhost:9200
-            predicates:
-              - Path=/api/auth/**,/authorization-microservice/**
-          - id: file-manager
-            uri: http://localhost:9000
-            predicates:
-              - Path=/api/file-system/**,/file-manager/**
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allow-credentials: true
+            allowed-headers:
+              - Content-Type
+              - Accept
+              - Authorization
+              - AuthorizationRefresh
+            allowed-origins: http://localhost:4200
+            allowed-methods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - OPTIONS
+      routes:
+        - id: authorization-microservice
+          uri: http://localhost:9200
+          predicates:
+            - Path=/api/v1/**, /authorization-microservice/**
+        - id: file-manager
+          uri: http://localhost:9000
+          predicates:
+            - Path=/api/v1/**, /file-manager/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
 
-
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
+    path: /swagger-ui/index.html
     config-url: /v3/api-docs/swagger-config
     urls:
-      - url: '/${spring.cloud.gateway.mvc.routes[0].id}/v3/api-docs'
+      - url: '/${spring.cloud.gateway.routes[0].id}/v3/api-docs'
         name: authorization service
-      - url: '/${spring.cloud.gateway.mvc.routes[1].id}/v3/api-docs'
+      - url: '/${spring.cloud.gateway.routes[1].id}/v3/api-docs'
         name: file manager service

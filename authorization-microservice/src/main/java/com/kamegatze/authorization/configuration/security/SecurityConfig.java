@@ -1,7 +1,9 @@
 package com.kamegatze.authorization.configuration.security;
 
 import com.kamegatze.authorization.configuration.security.http.entry.point.ExceptionEntryPointContainer;
+import com.kamegatze.authorization.configuration.security.provider.DaoAuthentication2FAProvider;
 import com.kamegatze.authorization.model.EAuthority;
+import com.kamegatze.authorization.services.MFATokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +12,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,20 +39,23 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final ExceptionEntryPointContainer exceptionEntryPointContainer;
+    private final MFATokenService mfaTokenService;
 
     @Value("${spring.application.name}")
     private String applicationName;
 
     private DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        DaoAuthentication2FAProvider authenticationProvider = new DaoAuthentication2FAProvider(mfaTokenService);
         authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.authenticationProvider(authenticationProvider());
+        return authenticationManagerBuilder.build();
     }
 
     private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
@@ -72,8 +78,8 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint()))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/api/auth/service/**", String.format("/%s/**", applicationName)).permitAll()
-                                .requestMatchers("/api/authentication/micro-service/**")
+                                .requestMatchers("/api/v1/auth/service/**", String.format("/%s/**", applicationName)).permitAll()
+                                .requestMatchers("/api/v1/authentication/micro-service/**", "/api/v1/account/**")
                                 .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                                 .anyRequest().authenticated()
                 )

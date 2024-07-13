@@ -3,14 +3,11 @@ package com.kamegatze.authorization.services.imp;
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
 import com.kamegatze.authorization.dto.AuthorityDto;
-import com.kamegatze.authorization.dto.ChangePasswordDto;
 import com.kamegatze.authorization.dto.ETokenType;
 import com.kamegatze.authorization.dto.ETypeTokenHeader;
 import com.kamegatze.authorization.dto.JwtDto;
 import com.kamegatze.authorization.dto.Login;
 import com.kamegatze.authorization.dto.UsersDto;
-import com.kamegatze.authorization.exception.EqualsPasswordException;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -20,13 +17,11 @@ import com.kamegatze.authorization.model.Users;
 import com.kamegatze.authorization.repoitory.AuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
-import com.kamegatze.authorization.services.EmailService;
 import com.kamegatze.authorization.services.JwtService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 
-import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,14 +51,11 @@ import java.time.Instant;
 import java.time.Period;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,8 +79,6 @@ class AuthorizationServiceImplTest {
     JwtIssuerValidator jwtValidator;
     @Mock
     SpringTemplateEngine templateEngine;
-    @Mock
-    EmailService emailService;
     @Mock
     ClientTransfer<Object> clientTransfer;
     @InjectMocks
@@ -604,324 +594,6 @@ class AuthorizationServiceImplTest {
         verify(usersRepository).existsByEmail(email);
         verifyNoMoreInteractions(usersRepository);
     }
-
-    @Test
-    @DisplayName("Отправка ссылки для смены пароля, для поиска пользователя по логину")
-    void sendCode_ExecuteIsValid_GenerateLinkUsersByEmail() throws MessagingException {
-        //given
-        String email = "aleksi.aleksi2014@yandex.ru";
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("fgsdfsgfdfggdgfsgd"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .build();
-        String htmlBody = "<!DOCTYPE html>\n" +
-                "<html xmlns:th=\"http://www.thymeleaf.org\" lang=\"ru\">\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
-                "    <title>Recovery code</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <p>Нажмите на <a th:href=\"${link}\">ссылку</a> для перехода на страницу смена пароля</p>\n" +
-                "</body>\n" +
-                "</html>";
-
-        doReturn(Optional.of(users)).when(usersRepository).findByEmail(email);
-        users.setRecoveryCode(UUID.randomUUID().toString());
-        doReturn(users).when(usersRepository).save(users);
-        doReturn(htmlBody).when(templateEngine).process(anyString(), any(Context.class));
-        doNothing().when(emailService).sendHtmlMessage(eq(users.getEmail()), anyString(), eq(htmlBody));
-        //when
-        authorizationService.sendCode(email);
-        //then
-        verify(usersRepository).findByEmail(email);
-        verify(usersRepository).save(users);
-        verify(templateEngine).process(anyString(), any(Context.class));
-        verify(emailService).sendHtmlMessage(eq(users.getEmail()), anyString(), eq(htmlBody));
-        verifyNoMoreInteractions(usersRepository, templateEngine, emailService);
-    }
-
-    @Test
-    @DisplayName("Отправка ссылки для смены пароля, для поиска пользователя по email")
-    void sendCode_ExecuteIsValid_GenerateLinkUsersByLogin() throws MessagingException {
-        //given
-        String login = "kamegatze";
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("fgsdfsgfdfggdgfsgd"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .build();
-        String htmlBody = "<!DOCTYPE html>\n" +
-                "<html xmlns:th=\"http://www.thymeleaf.org\" lang=\"ru\">\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
-                "    <title>Recovery code</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <p>Нажмите на <a th:href=\"${link}\">ссылку</a> для перехода на страницу смена пароля</p>\n" +
-                "</body>\n" +
-                "</html>";
-
-        doReturn(Optional.of(users)).when(usersRepository).findByLogin(login);
-        users.setRecoveryCode(UUID.randomUUID().toString());
-        doReturn(users).when(usersRepository).save(users);
-        doReturn(htmlBody).when(templateEngine).process(anyString(), any(Context.class));
-        doNothing().when(emailService).sendHtmlMessage(eq(users.getEmail()), anyString(), eq(htmlBody));
-        //when
-        authorizationService.sendCode(login);
-        //then
-        verify(usersRepository).findByLogin(login);
-        verify(usersRepository).save(users);
-        verify(templateEngine).process(anyString(), any(Context.class));
-        verify(emailService).sendHtmlMessage(eq(users.getEmail()), anyString(), eq(htmlBody));
-        verifyNoMoreInteractions(usersRepository, templateEngine, emailService);
-    }
-
-    @Test
-    @DisplayName("Отправка ссылки для смены пароля, по логину. Обработки исключения пользоватеь не найден")
-    void sendCode_ExecuteIsInvalid_ThrowsUserNotExistExceptionByLogin() {
-        //given
-        String login = "kamegatze";
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("fgsdfsgfdfggdgfsgd"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .build();
-        String htmlBody = "<!DOCTYPE html>\n" +
-                "<html xmlns:th=\"http://www.thymeleaf.org\" lang=\"ru\">\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
-                "    <title>Recovery code</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <p>Нажмите на <a th:href=\"${link}\">ссылку</a> для перехода на страницу смена пароля</p>\n" +
-                "</body>\n" +
-                "</html>";
-
-        doReturn(Optional.empty()).when(usersRepository).findByLogin(login);
-        //when
-        UserNotExistException exception = assertThrows(UserNotExistException.class, () -> {
-            authorizationService.sendCode(login);
-        });
-        //then
-        assertEquals(exception.getMessage(), String.format("Not found user by login: \"%s\"", login));
-        verify(usersRepository).findByLogin(login);
-        verifyNoMoreInteractions(usersRepository);
-    }
-
-    @Test
-    @DisplayName("Отправка ссылки для смены пароля, по email. Обработки исключения пользоватеь не найден")
-    void sendCode_ExecuteIsInvalid_ThrowsUserNotExistExceptionByEmail() {
-        //given
-        String email = "aleksi.aleksi2014@yandex.ru";
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("fgsdfsgfdfggdgfsgd"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .build();
-        String htmlBody = "<!DOCTYPE html>\n" +
-                "<html xmlns:th=\"http://www.thymeleaf.org\" lang=\"ru\">\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n" +
-                "    <title>Recovery code</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <p>Нажмите на <a th:href=\"${link}\">ссылку</a> для перехода на страницу смена пароля</p>\n" +
-                "</body>\n" +
-                "</html>";
-
-        doReturn(Optional.empty()).when(usersRepository).findByEmail(email);
-        //when
-        UserNotExistException exception = assertThrows(UserNotExistException.class, () -> {
-            authorizationService.sendCode(email);
-        });
-        //then
-        assertEquals(exception.getMessage(), String.format("Not found user by email: \"%s\"", email));
-        verify(usersRepository).findByEmail(email);
-        verifyNoMoreInteractions(usersRepository);
-    }
-
-    @Test
-    @DisplayName("Смена пароля. Метод выполняется корректно")
-    void changePassword_ExecuteIsValid_UserChangePassword() throws EqualsPasswordException, NotEqualsPasswordException {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        //given
-        UUID recoveryCode = UUID.randomUUID();
-
-        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
-                .recoveryCode(recoveryCode.toString())
-                .password("gsdassgffgdfgsgfdsgsg")
-                .passwordRetry("gsdassgffgdfgsgfdsgsg")
-                .build();
-        String password = encoder.encode("gsdassgffgdfgsgfdsgsg");
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("sfsfdgdgdfwfqwdwfwf"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .recoveryCode(recoveryCode.toString())
-                .build();
-
-        doReturn(Optional.of(users)).when(usersRepository).findByRecoveryCode(users.getRecoveryCode());
-        doReturn(password).when(passwordEncoder).encode(changePasswordDto.getPassword());
-        doReturn(Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(password)
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .recoveryCode("")
-                .build()).when(usersRepository).save(users);
-        //when
-        authorizationService.changePassword(changePasswordDto);
-        //then
-        verify(usersRepository).findByRecoveryCode(recoveryCode.toString());
-        verify(passwordEncoder).encode(changePasswordDto.getPassword());
-        verify(usersRepository).save(any(Users.class));
-        verifyNoMoreInteractions(usersRepository, passwordEncoder);
-    }
-
-    @Test
-    @DisplayName("Смена пароля. Метод выкидывает исключение NotEqualsPasswordException")
-    void sendCode_ExecuteIsInvalid_ThrowsNotEqualsPasswordException() {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        //given
-        UUID recoveryCode = UUID.randomUUID();
-
-        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
-                .recoveryCode(recoveryCode.toString())
-                .password("gsdassgffgdfgsgfdsgsg")
-                .passwordRetry("gsdassgffgdfgsgfdsgs")
-                .build();
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(encoder.encode("gsdassgffgdfgsgfdsgsg"))
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .recoveryCode(recoveryCode.toString())
-                .build();
-
-        doReturn(Optional.of(users)).when(usersRepository).findByRecoveryCode(changePasswordDto.getRecoveryCode());
-        //when
-        NotEqualsPasswordException exception = assertThrows(NotEqualsPasswordException.class, () -> {
-           authorizationService.changePassword(changePasswordDto);
-        });
-        //then
-        assertEquals(exception.getMessage(), "Field password and passwordRetry not equals");
-        verify(usersRepository).findByRecoveryCode(recoveryCode.toString());
-        verifyNoMoreInteractions(usersRepository);
-    }
-
-    @Test
-    @DisplayName("Смена пароля. Метод выкидывает исключение EqualsPasswordException")
-    void changePassword_ExecuteIsInvalid_ThrowsEqualsPasswordException() {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        //given
-        UUID recoveryCode = UUID.randomUUID();
-
-        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
-                .recoveryCode(recoveryCode.toString())
-                .password("gsdassgffgdfgsgfdsgsg")
-                .passwordRetry("gsdassgffgdfgsgfdsgsg")
-                .build();
-        String password = encoder.encode("gsdassgffgdfgsgfdsgsg");
-        Users users = Users.builder()
-                .id(UUID.randomUUID())
-                .name("Aleksey Shirayev")
-                .email("aleksi.aleksi2014@yandex.ru")
-                .login("kamegatze")
-                .password(password)
-                .authorities(
-                        List.of(Authority.builder()
-                                .id(UUID.randomUUID())
-                                .name(EAuthority.AUTHORITY_READ).build())
-                )
-                .recoveryCode(recoveryCode.toString())
-                .build();
-
-        doReturn(Optional.of(users)).when(usersRepository).findByRecoveryCode(users.getRecoveryCode());
-        doReturn(password).when(passwordEncoder).encode(changePasswordDto.getPassword());
-        //when
-        EqualsPasswordException exception = assertThrows(EqualsPasswordException.class, () -> {
-            authorizationService.changePassword(changePasswordDto);
-        });
-        //then
-        assertEquals(exception.getMessage(), "Input other password. Current password equals previous password");
-        verify(usersRepository).findByRecoveryCode(changePasswordDto.getRecoveryCode());
-        verify(passwordEncoder).encode(changePasswordDto.getPassword());
-        verifyNoMoreInteractions(usersRepository, passwordEncoder);
-    }
-
-    @Test
-    @DisplayName("Смена пароля. Метод выкидывает исключение NoSuchElementException")
-    void changePassword_ExecuteIsInvalid_ThrowsNoSuchElementException() {
-        //given
-        UUID recoveryCode = UUID.randomUUID();
-        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
-                .recoveryCode(recoveryCode.toString())
-                .password("gsdassgffgdfgsgfdsgsg")
-                .passwordRetry("gsdassgffgdfgsgfdsgsg")
-                .build();
-
-        doReturn(Optional.empty()).when(usersRepository).findByRecoveryCode(changePasswordDto.getRecoveryCode());
-        //when
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
-			authorizationService.changePassword(changePasswordDto);
-        });
-        //then
-		assertEquals(exception.getMessage(), String.format("User not found by recovery code: \"%s\"", changePasswordDto.getRecoveryCode()));
-		verify(usersRepository).findByRecoveryCode(changePasswordDto.getRecoveryCode());
-		verifyNoMoreInteractions(usersRepository);
-	}
 
 	@Test
 	@DisplayName("Получние прав для другого сервиса. Возвращение пустого списка")

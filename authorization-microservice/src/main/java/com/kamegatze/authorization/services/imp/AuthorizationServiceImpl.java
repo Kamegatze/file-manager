@@ -3,7 +3,8 @@ package com.kamegatze.authorization.services.imp;
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
 import com.kamegatze.authorization.dto.*;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
+import com.kamegatze.authorization.dto.mfa.MFADto;
+import com.kamegatze.authorization.exception.Invalid2FaAuthenticationException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -15,17 +16,15 @@ import com.kamegatze.authorization.repoitory.AuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersAuthorityRepository;
 import com.kamegatze.authorization.repoitory.UsersRepository;
 import com.kamegatze.authorization.services.AuthorizationService;
-import com.kamegatze.authorization.services.EmailService;
 import com.kamegatze.authorization.services.JwtService;
+import com.kamegatze.authorization.services.MFATokenService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,24 +35,16 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 
 import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import com.kamegatze.authorization.exception.EqualsPasswordException;
 
 @Service
 @Validated
@@ -69,14 +60,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtService jwtService;
     private final UsersDetailsService usersDetailsService;
     private final JwtIssuerValidator jwtValidator;
-    private final SpringTemplateEngine templateEngine;
-    private final EmailService emailService;
     private final ClientTransfer<Object> clientTransfer;
+    private final MFATokenService mfaTokenService;
 
-    private final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-
-    @Value("${url.change-password}")
-    private String urlChangePassword;
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
     @Override
@@ -125,7 +111,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
-                        login.getPassword()
+                        login.getCredentials()
                 )
         );
 
@@ -212,6 +198,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isExistUser(String loginOrEmail) {
+        String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
         boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
@@ -220,54 +207,22 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public void sendCode(String loginOrEmail) throws MessagingException {
-        Context context = new Context();
-        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
-        Users user;
-        if (isEmail) {
-            user = usersRepository.findByEmail(loginOrEmail)
-                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by email: \"%s\"", loginOrEmail)));
-        } else {
-            user = usersRepository.findByLogin(loginOrEmail)
-                    .orElseThrow(() -> new UserNotExistException(String.format("Not found user by login: \"%s\"", loginOrEmail)));
+    public void isUserValidateAuthenticationCode(String code, String login) {
+        Optional<Users> users = usersRepository.findByLogin(login);
+        users.ifPresent((Users user) -> {
+            boolean isValidateAuthenticationCode = mfaTokenService.verifyTotp(code, user.getSecret());
+            if (!isValidateAuthenticationCode) {
+                throw new Invalid2FaAuthenticationException("Invalid authentication");
+            }
+        });
+        if (users.isEmpty()) {
+            throw new NoSuchElementException(String.format("User not found by login \"%s\"", login));
         }
-        String tokenUUID = UUID.randomUUID().toString();
-        String link = String.format("%s?token=%s", urlChangePassword, tokenUUID);
-        user.setRecoveryCode(tokenUUID);
-        usersRepository.save(user);
-        context.setVariable("link", link);
-        String htmlBody = templateEngine.process("email-recovery-code-ru.html", context);
-        emailService.sendHtmlMessage(user.getEmail(), "File-Manager. Смена пароля", htmlBody);
-        asyncRemoveRecoveryCode(5, user);
     }
 
     @Override
-    public void changePassword(ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException {
-        Users user = usersRepository.findByRecoveryCode(changePasswordDto.getRecoveryCode())
-                .orElseThrow(() -> new NoSuchElementException(String.format("User not found by recovery code: \"%s\"", changePasswordDto.getRecoveryCode())));
-        if (!changePasswordDto.getPassword().equals(changePasswordDto.getPasswordRetry())) {
-            throw new NotEqualsPasswordException("Field password and passwordRetry not equals");
-        }
-        String password = passwordEncoder.encode(changePasswordDto.getPassword());
-        if(user.getPassword().equals(password)) {
-            throw new EqualsPasswordException("Input other password. Current password equals previous password");
-        }
-        user.setRecoveryCode("");
-        user.setPassword(password);
-        usersRepository.save(user);
-    }
+    public void changePassword(ChangePasswordDto changePasswordDto) {
 
-    @Async
-    protected void asyncRemoveRecoveryCode(Integer minute, Users users) {
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.schedule(() -> {
-            removeRecoveryCode(users);
-        }, minute, TimeUnit.MINUTES);
-    }
-
-    private void removeRecoveryCode(Users users) {
-        users.setRecoveryCode("");
-        usersRepository.save(users);
     }
 
     @Override
@@ -286,5 +241,43 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return authorities.stream().map(
                 authority -> new AuthorityDto(authority.getName().name())
         ).toList();
+    }
+
+    @Override
+    public MFADto set2FAAuthentication(HttpServletRequest request) {
+        Users users = getUserViaHttpRequest(request);
+        String secret = mfaTokenService.generateSecretKey();
+        users.setSecret(secret);
+        usersRepository.save(users);
+        return new MFADto(mfaTokenService.getQRCode(secret), secret);
+    }
+
+    @Override
+    public void checkMFAValidateCodeAndEnableAuthorizationViaMFA(String code, HttpServletRequest request) {
+        Users users = getUserViaHttpRequest(request);
+        users.setEnable2fa(true);
+        isUserValidateAuthenticationCode(code, users.getLogin());
+        usersRepository.save(users);
+    }
+
+    @Override
+    public InfoAboutUser getInfoAboutUserByLogin(String login) {
+        Users users = usersRepository.findByLogin(login)
+                .orElseThrow(
+                        () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))
+                );
+
+        return new InfoAboutUser(users.getLogin(), users.isEnable2fa());
+    }
+
+    private Users getUserViaHttpRequest(HttpServletRequest request) {
+        String jwt = Optional.ofNullable(
+                        request.getHeader(ETypeTokenHeader.Authorization.name())
+                ).map(token -> token.substring(7))
+                .orElseThrow(() -> new NoSuchElementException("Jwt is null"));
+        String login = jwtService.getLogin(jwt);
+        return usersRepository.findByLogin(login).orElseThrow(
+                () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))
+        );
     }
 }

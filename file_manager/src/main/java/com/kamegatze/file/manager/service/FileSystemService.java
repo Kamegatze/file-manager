@@ -59,7 +59,7 @@ public interface FileSystemService {
 
     List<FileSystemDto> getChildrenByPath(@NotEmpty @NotBlank @NotNull String path, HttpServletRequest request);
 
-    FileSystemDto renameFileSystem(RenameFileSystemDto renameFileSystemDto);
+    FileSystemDto renameFileSystem(@Valid RenameFileSystemDto renameFileSystemDto);
 
     AllContentFolder getAllContentFolder(@NotEmpty @NotBlank @NotNull
                                          @Size(min = 36, max = 36, message = "The uuid need consist from 36 sign")

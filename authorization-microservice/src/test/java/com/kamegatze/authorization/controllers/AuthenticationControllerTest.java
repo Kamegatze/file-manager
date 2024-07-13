@@ -12,7 +12,6 @@ import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import com.kamegatze.authorization.services.AuthorizationService;
 import com.kamegatze.general.dto.response.ResponseDto;
-import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -187,27 +186,6 @@ class AuthenticationControllerTest {
                                         .build());
         assertEquals(result, responseThen);
         verify(authorizationService).authenticationViaRefreshToken(request);
-        verifyNoMoreInteractions(authorizationService);
-    }
-
-    @Test
-    @DisplayName("Начало изменения пароля и отправка на email сообщения об c url для изменея пароля")
-    void handleSendEmailChangePassword_RequestIsValid_ReturnsResponseDto() throws MessagingException {
-        //given
-        String login = "kamegatze";
-        doNothing().when(authorizationService).sendCode(login);
-        //when
-        ResponseEntity<ResponseDto> result = authenticationController.handleSendEmailChangePassword(login);
-        //then
-        ResponseEntity<ResponseDto> response = ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ResponseDto.builder()
-                        .status(HttpStatus.OK)
-                        .message("Go to your mailbox to recover " +
-                                "your password")
-                        .build());
-        assertEquals(response, result);
-        verify(authorizationService).sendCode(login);
         verifyNoMoreInteractions(authorizationService);
     }
 
