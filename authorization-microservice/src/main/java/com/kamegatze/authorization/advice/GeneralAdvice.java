@@ -1,7 +1,6 @@
 package com.kamegatze.authorization.advice;
 
 
-import com.kamegatze.authorization.dto.Response;
 import com.kamegatze.general.dto.response.ResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

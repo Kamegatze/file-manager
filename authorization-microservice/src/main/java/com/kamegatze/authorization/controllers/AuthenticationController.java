@@ -13,10 +13,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
+    private final JwtDecoder jwtDecoder;
 
     @Operation(
             summary = "Info user",
@@ -69,8 +72,8 @@ public class AuthenticationController {
             description = "Sign in system and get jwt tokens"
     )
     @PostMapping("/signin")
-    public ResponseEntity<JwtDto> handleSignInUser(@RequestBody Login login) {
-        JwtDto jwtDto = authorizationService.signin(login);
+    public ResponseEntity<JwtDto> handleSignInUser(@RequestBody Login login, HttpServletResponse response) {
+        JwtDto jwtDto = authorizationService.signin(login, response);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);

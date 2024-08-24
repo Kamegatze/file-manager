@@ -43,7 +43,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.text.ParseException;
@@ -283,7 +282,7 @@ class AuthorizationServiceImplTest {
                 .type(ETokenType.Bearer)
                 .build();
         //when
-        JwtDto result = authorizationService.signin(login);
+        JwtDto result = authorizationService.signin(login, response);
         //then
         assertEquals(result, returnResult);
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));

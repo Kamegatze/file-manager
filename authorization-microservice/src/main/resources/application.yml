@@ -40,7 +40,16 @@ logging:
   level:
     org:
       springframework:
-        security: info
+        security: debug
+
+token:
+  cookie:
+    name: __Host-auth-token
+    path: /
+    domain:
+    max-age: '${app.refresh-token}'
+    http-only: true
+    secure: true
 
 rsa:
   private-key: classpath:certs/private.pem

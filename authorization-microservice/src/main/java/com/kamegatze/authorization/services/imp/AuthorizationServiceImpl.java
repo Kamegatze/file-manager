@@ -21,7 +21,9 @@ import com.kamegatze.authorization.services.MFATokenService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,6 +64,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtIssuerValidator jwtValidator;
     private final ClientTransfer<Object> clientTransfer;
     private final MFATokenService mfaTokenService;
+    private final CookieProperties cookieProperties;
+
 
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
@@ -107,7 +111,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public JwtDto signin(Login login) {
+    public JwtDto signin(Login login, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
@@ -118,6 +122,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String tokenAccess = jwtService.generateAccess((UsersDetails) authentication.getPrincipal());
         String tokenRefresh = jwtService.generateRefresh((UsersDetails) authentication.getPrincipal());
+
+        Cookie cookie = new Cookie(cookieProperties.getName(), tokenRefresh);
+        cookie.setPath(cookieProperties.getPath());
+        cookie.setDomain(cookieProperties.getDomain());
+        cookie.setSecure(cookieProperties.isSecure());
+        cookie.setHttpOnly(cookieProperties.isHttpOnly());
+        cookie.setMaxAge(cookieProperties.getMaxAge() * 60);
+        response.addCookie(cookie);
 
         return JwtDto.builder()
                 .tokenAccess(tokenAccess)

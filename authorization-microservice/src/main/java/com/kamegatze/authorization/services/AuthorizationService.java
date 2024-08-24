@@ -8,6 +8,7 @@ import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -21,9 +22,9 @@ import java.util.List;
 
 @Validated
 public interface AuthorizationService {
-    public UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException;
+    UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException;
 
-    public JwtDto signin(@Valid Login login);
+    JwtDto signin(@Valid Login login, HttpServletResponse response);
 
     Boolean isAuthenticationUser(HttpServletRequest request) throws ParseException;
 

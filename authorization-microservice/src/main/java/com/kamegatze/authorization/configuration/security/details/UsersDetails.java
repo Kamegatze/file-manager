@@ -2,7 +2,6 @@ package com.kamegatze.authorization.configuration.security.details;
 
 import com.kamegatze.authorization.model.Users;
 import lombok.Data;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

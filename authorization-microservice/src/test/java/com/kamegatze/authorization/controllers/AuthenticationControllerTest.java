@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -119,16 +120,19 @@ class AuthenticationControllerTest {
         //given
         Login login = Login.builder()
                 .login("kamegatze")
-                .password("fgrgdddsdvbhgvbbfgrewert")
+                .credentials("fgrgdddsdvbhgvbbfgrewert")
                 .build();
 
         doReturn(JwtDto.builder()
                 .type(ETokenType.Bearer)
                 .refreshToken(refreshToken)
                 .tokenAccess(accessToken)
-                .build()).when(authorizationService).signin(login);
+                .build()).when(authorizationService).signin(login, response);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
         //when
-        ResponseEntity<JwtDto> responseDtoResponseEntity = authenticationController.handleSignInUser(login);
+        ResponseEntity<JwtDto> responseDtoResponseEntity = authenticationController.handleSignInUser(login, response);
         //then
         ResponseEntity<JwtDto> responseThen = ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -139,7 +143,7 @@ class AuthenticationControllerTest {
                         .build());
 
         assertEquals(responseThen, responseDtoResponseEntity);
-        verify(authorizationService).signin(login);
+        verify(authorizationService).signin(login, response);
         verifyNoMoreInteractions(authorizationService);
     }
 
