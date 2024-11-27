@@ -1,10 +1,6 @@
 package com.kamegatze.file.manager.utilities.mapper;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface MapperClazz {
     <From, To> To mapperToClazz(From fromClazz, Class<To> toClass);

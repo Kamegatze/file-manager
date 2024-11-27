@@ -39,7 +39,6 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-
 import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;

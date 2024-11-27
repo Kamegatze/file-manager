@@ -2,12 +2,7 @@ package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
-import com.kamegatze.authorization.dto.AuthorityDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -21,7 +16,6 @@ import com.kamegatze.authorization.services.JwtService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +37,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.text.ParseException;
@@ -54,7 +47,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 

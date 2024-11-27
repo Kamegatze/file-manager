@@ -5,6 +5,7 @@ import com.kamegatze.authorization.remote.security.filter.JwtRemoteFilter;
 import com.kamegatze.authorization.remote.security.provider.JwtRemoteAuthenticationProvider;
 import com.kamegatze.file.manager.configuration.security.details.UsersServiceDetails;
 import com.kamegatze.file.manager.service.UsersService;
+import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import jakarta.servlet.Filter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 

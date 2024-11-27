@@ -1,11 +1,6 @@
 package com.kamegatze.authorization.controllers;
 
-import com.kamegatze.authorization.dto.ChangePasswordDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
@@ -27,12 +22,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-
 import java.text.ParseException;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
