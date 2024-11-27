@@ -243,7 +243,7 @@ class AuthorizationServiceImplTest {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         Login login = Login.builder()
                 .login("kamegatze")
-                .password("fgrgdddsdvbhgvbbfgrewert")
+                .credentials("fgrgdddsdvbhgvbbfgrewert")
                 .build();
 
         Users users = Users.builder()
@@ -251,7 +251,7 @@ class AuthorizationServiceImplTest {
                 .name("Aleksey Shirayev")
                 .email("aleksi.aleksi2014@yandex.ru")
                 .login("kamegatze")
-                .password(bCryptPasswordEncoder.encode(login.getPassword()))
+                .password(bCryptPasswordEncoder.encode(login.getCredentials()))
                 .authorities(
                         List.of(Authority.builder()
                         .id(UUID.randomUUID())
@@ -262,7 +262,7 @@ class AuthorizationServiceImplTest {
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 new UsersDetails(users),
                 bCryptPasswordEncoder.encode(
-                        login.getPassword()
+                        login.getCredentials()
                 )
         );
         doReturn(
