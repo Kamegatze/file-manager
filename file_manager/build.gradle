@@ -22,10 +22,9 @@ ext {
 }
 
 dependencies {
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}"
-    implementation project(":general-dto")
-    implementation project(':authorization-remote-jwt')
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
+    "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}", project(":general-dto"),
+    project(':authorization-remote-jwt')
     runtimeOnly 'org.postgresql:postgresql'
 }
 

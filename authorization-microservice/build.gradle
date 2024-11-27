@@ -33,18 +33,17 @@ ext {
 }
 
 dependencies {
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    implementation project(':authorization-remote-jwt')
-    implementation project(":general-dto")
-    runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
+    project(':authorization-remote-jwt'), project(":general-dto"),
+    'org.springframework.boot:spring-boot-starter-graphql',
+    "com.graphql-java-kickstart:graphql-spring-boot-starter:${graphQL}",
+    "org.springframework.boot:spring-boot-starter-mail:${emailStarter}",
+    'org.thymeleaf:thymeleaf-spring6:3.1.1.RELEASE',
+    "org.jboss.aerogear:aerogear-otp-java:${aerogearOtp}",
+    "dev.samstevens.totp:totp:${totp}",
+    "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}"
     testImplementation 'org.springframework.graphql:spring-graphql-test'
-    implementation "com.graphql-java-kickstart:graphql-spring-boot-starter:${graphQL}"
-    implementation "org.springframework.boot:spring-boot-starter-mail:${emailStarter}"
-    implementation 'org.thymeleaf:thymeleaf-spring6:3.1.1.RELEASE'
-    implementation "org.jboss.aerogear:aerogear-otp-java:${aerogearOtp}"
-    implementation "dev.samstevens.totp:totp:${totp}"
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}"
+    runtimeOnly 'org.postgresql:postgresql'
 }
 
 dependencyManagement {
