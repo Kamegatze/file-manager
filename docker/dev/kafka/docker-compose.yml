@@ -1,0 +1,31 @@
+services:
+  zookeeper-file-manager:
+    container_name: zookeeper-file-manager
+    image: zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 1
+    ports:
+      - "22181:2181"
+    volumes:
+      - ./zookeeper/data/datalog:/datalog
+      - ./zookeeper/data/data:/data
+
+  kafka-file-manager:
+    restart: always
+    image: bitnami/kafka:latest
+    depends_on:
+      - zookeeper-file-manager
+    ports:
+      - "29092:29092"
+    volumes:
+      - ./kafka/data:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-file-manager:2181
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL_DIFFERENT_HOST://:29092,EXTERNAL_SAME_HOST://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://localhost:9092,EXTERNAL_SAME_HOST://localhost:9093,EXTERNAL_DIFFERENT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL_DIFFERENT_HOST:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

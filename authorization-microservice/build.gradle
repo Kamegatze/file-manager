@@ -34,7 +34,7 @@ ext {
 
 dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
-    project(':authorization-remote-jwt'), project(":general-dto"),
+    project(':authorization-remote-jwt'), project(':general-dto'),
     'org.springframework.boot:spring-boot-starter-graphql',
     "com.graphql-java-kickstart:graphql-spring-boot-starter:${graphQL}",
     "org.springframework.boot:spring-boot-starter-mail:${emailStarter}",

@@ -7,7 +7,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
-    url: jdbc:postgresql://dev-server-kamegatze:5434/authorization
+    url: jdbc:postgresql://localhost:5434/authorization
 
   jpa:
     hibernate:
@@ -23,7 +23,7 @@ spring:
       enabled: true
 
   kafka:
-    bootstrap-servers: dev-server-kamegatze:29092
+    bootstrap-servers: localhost:29092
     topics:
       save:
         users: save-users

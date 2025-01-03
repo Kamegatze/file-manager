@@ -1,0 +1,24 @@
+services:
+  authorization-file-manager:
+    container_name: authorization-file-manager
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=authorization
+    image: postgres:13.11-bullseye
+    ports:
+      - '5434:5432'
+    volumes:
+      - ./authorization-file-manager/data:/var/lib/postgresql/data
+
+  file-manager-file-system:
+    container_name: file-manager-file-system
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=file_manager
+    image: postgres:13.11-bullseye
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./file-manager-file-system/data:/var/lib/postgresql/data
