@@ -86,6 +86,12 @@ public class AuthenticationController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(isAuthentication);
     }
+    
+    @GetMapping("/is-authentication-via-response-code")
+    public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
+        var isAuthentication = authorizationService.isAuthenticationUser(request);
+        return isAuthentication ? ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
     @Operation(
             summary = "Authorization via refresh token",
