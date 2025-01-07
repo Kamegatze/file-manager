@@ -5,6 +5,6 @@ include 'authorization-microservice'
 include 'file_manager'
 include 'general-dto'
 include 'eureka-server'
-include 'gateway-service'
+include 'doc-service'
 
 
