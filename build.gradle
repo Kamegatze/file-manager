@@ -33,7 +33,7 @@ allprojects {
     }
 
     dependencies {
-        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//        developmentOnly 'org.springframework.boot:spring-boot-devtools'
         implementation 'org.springframework.kafka:spring-kafka',
         'org.springframework.boot:spring-boot-starter-security', 'org.springframework.boot:spring-boot-starter-data-jpa',
         'org.springframework.boot:spring-boot-starter-web',
