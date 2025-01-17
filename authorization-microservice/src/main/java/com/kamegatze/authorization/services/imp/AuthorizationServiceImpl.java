@@ -41,7 +41,6 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-
 import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -154,8 +153,17 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             return Boolean.FALSE;
         }
 
-        String tokenRefresh = refreshTokenOptional.get();
-        return tokenValid(tokenRefresh);
+        if (refreshTokenOptional.isPresent() && tokenAccessOptional.isEmpty()) {
+            String tokenRefresh = refreshTokenOptional.get();
+            return tokenValid(tokenRefresh);
+        }
+        String token = tokenAccessOptional.get().substring(7);
+
+        if (refreshTokenOptional.isEmpty()) {
+            return tokenValid(token);
+        }
+
+        return tokenValid(token) && tokenValid(refreshTokenOptional.get());
     }
 
     private Boolean tokenValid(String token) throws ParseException {

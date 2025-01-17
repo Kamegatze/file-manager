@@ -19,10 +19,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 		ReactiveSecurityAutoConfiguration.class
 })
 @EnableDiscoveryClient
-public class GatewayServiceApplication {
+public class DocServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GatewayServiceApplication.class, args);
+		SpringApplication.run(DocServiceApplication.class, args);
 	}
 
 }

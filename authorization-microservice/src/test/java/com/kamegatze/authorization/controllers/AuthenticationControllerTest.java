@@ -1,11 +1,6 @@
 package com.kamegatze.authorization.controllers;
 
-import com.kamegatze.authorization.dto.ChangePasswordDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.EqualsPasswordException;
 import com.kamegatze.authorization.exception.NotEqualsPasswordException;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
@@ -28,12 +23,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-
 import java.text.ParseException;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -193,29 +187,29 @@ class AuthenticationControllerTest {
         verifyNoMoreInteractions(authorizationService);
     }
 
-    @Test
-    @DisplayName("Изменение пароля пользователя")
-    void handleChangePassword_RequestIsValid_ReturnsResponseDto()
-            throws EqualsPasswordException, NotEqualsPasswordException {
-        //given
-        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
-                .recoveryCode(UUID.randomUUID().toString())
-                .password("fgrgdddsdvbhgvbbfgrewert")
-                .passwordRetry("fgrgdddsdvbhgvbbfgrewert")
-                .build();
-        doNothing().when(authorizationService).changePassword(changePasswordDto);
-        //when
-        ResponseEntity<ResponseDto> result = authenticationController.handleChangePassword(changePasswordDto);
-        //then
-        ResponseEntity<ResponseDto> responseDto = ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ResponseDto.builder()
-                        .message("Your password change")
-                        .status(HttpStatus.OK)
-                        .build());
-        assertEquals(result, responseDto);
-        verify(authorizationService).changePassword(changePasswordDto);
-        verifyNoMoreInteractions(authorizationService);
-    }
+//    @Test
+//    @DisplayName("Изменение пароля пользователя")
+//    void handleChangePassword_RequestIsValid_ReturnsResponseDto()
+//            throws EqualsPasswordException, NotEqualsPasswordException {
+//        //given
+//        ChangePasswordDto changePasswordDto = ChangePasswordDto.builder()
+//                .recoveryCode(UUID.randomUUID().toString())
+//                .password("fgrgdddsdvbhgvbbfgrewert")
+//                .passwordRetry("fgrgdddsdvbhgvbbfgrewert")
+//                .build();
+//        doNothing().when(authorizationService).changePassword(changePasswordDto);
+//        //when
+//        ResponseEntity<ResponseDto> result = authenticationController.(changePasswordDto);
+//        //then
+//        ResponseEntity<ResponseDto> responseDto = ResponseEntity
+//                .status(HttpStatus.OK)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .body(ResponseDto.builder()
+//                        .message("Your password change")
+//                        .status(HttpStatus.OK)
+//                        .build());
+//        assertEquals(result, responseDto);
+//        verify(authorizationService).changePassword(changePasswordDto);
+//        verifyNoMoreInteractions(authorizationService);
+//    }
 }

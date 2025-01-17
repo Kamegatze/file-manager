@@ -1,11 +1,7 @@
 package com.kamegatze.authorization.advice;
 
 import com.kamegatze.authorization.controllers.AuthenticationController;
-import com.kamegatze.authorization.exception.EqualsPasswordException;
-import com.kamegatze.authorization.exception.NotEqualsPasswordException;
-import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
-import com.kamegatze.authorization.exception.UserNotExistException;
-import com.kamegatze.authorization.exception.UsersExistException;
+import com.kamegatze.authorization.exception.*;
 import com.kamegatze.general.dto.response.ResponseDto;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;

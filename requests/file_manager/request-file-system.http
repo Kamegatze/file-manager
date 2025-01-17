@@ -1,0 +1,30 @@
+### get info about root
+GET localhost:8080/api/v1/file-system/get-root
+Content-Type: application/json
+Authorization: Bearer
+
+### get children
+GET localhost:8080/api/v1/file-system/children?parentId=d2aae82e-2807-4e5a-9db6-ea65af958096
+Content-Type: application/json
+Authorization: Bearer
+
+### get info about file or folder
+GET localhost:8080/api/v1/file-system/d2aae82e-2807-4e5a-9db6-ea65af958096
+Content-Type: application/json
+Authorization: Bearer
+
+### get children by path
+GET localhost:8080/api/v1/file-system/children-by-path?path=/test
+Content-Type: application/json
+Authorization: Bearer
+
+
+### create folder
+POST localhost:8080/api/v1/file-system/create-folder
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "name": "test",
+  "parentId": "d2aae82e-2807-4e5a-9db6-ea65af958096"
+}

@@ -17,7 +17,7 @@ allprojects {
     }
 
     ext {
-        nimbusJwt = '9.31'
+        nimbusJwt = '9.47'
         modelMapperVersion = '3.2.0'
     }
 
@@ -27,26 +27,23 @@ allprojects {
     }
 
     dependencies {
-        implementation "com.nimbusds:nimbus-jose-jwt:${nimbusJwt}"
-        implementation "org.modelmapper:modelmapper:${modelMapperVersion}"
-        implementation 'org.liquibase:liquibase-core'
+        implementation "com.nimbusds:nimbus-jose-jwt:${nimbusJwt}",
+        "org.modelmapper:modelmapper:${modelMapperVersion}",
+        'org.liquibase:liquibase-core'
     }
 
     dependencies {
-        developmentOnly 'org.springframework.boot:spring-boot-devtools'
-        implementation 'org.springframework.kafka:spring-kafka'
-        implementation 'org.springframework.boot:spring-boot-starter-security'
-        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-        implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.boot:spring-boot-starter-validation'
-        implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+//        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        implementation 'org.springframework.kafka:spring-kafka',
+        'org.springframework.boot:spring-boot-starter-security', 'org.springframework.boot:spring-boot-starter-data-jpa',
+        'org.springframework.boot:spring-boot-starter-web',
+        'org.springframework.boot:spring-boot-starter-validation',
+        'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     }
 
     dependencies {
-        testImplementation 'org.springframework.security:spring-security-test'
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'org.springframework.graphql:spring-graphql-test'
-        testImplementation 'org.springframework.kafka:spring-kafka-test'
-        testImplementation 'org.testcontainers:postgresql'
+        testImplementation 'org.springframework.security:spring-security-test',
+        'org.springframework.boot:spring-boot-starter-test', 'org.springframework.graphql:spring-graphql-test',
+        'org.springframework.kafka:spring-kafka-test', 'org.testcontainers:postgresql'
     }
 }

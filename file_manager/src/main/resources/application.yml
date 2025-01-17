@@ -10,7 +10,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
-    url: jdbc:postgresql://dev-server-kamegatze:5433/file_manager
+    url: jdbc:postgresql://localhost:5433/file_manager
     hikari:
       auto-commit: false
 
@@ -25,7 +25,7 @@ spring:
     show-sql: true
 
   kafka:
-    bootstrap-servers: dev-server-kamegatze:29092
+    bootstrap-servers: localhost:29092
     consumer:
       auto-offset-reset: earliest
       group-id: save-users-group

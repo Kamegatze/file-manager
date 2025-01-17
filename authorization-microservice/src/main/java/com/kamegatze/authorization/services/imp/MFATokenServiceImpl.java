@@ -2,14 +2,14 @@ package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.exception.QRCreateException;
 import com.kamegatze.authorization.services.MFATokenService;
+import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.HashingAlgorithm;
 import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import dev.samstevens.totp.secret.SecretGenerator;
-import dev.samstevens.totp.code.CodeVerifier;
 
 @Service
 @RequiredArgsConstructor

@@ -2,12 +2,7 @@ package com.kamegatze.authorization.services.imp;
 
 import com.kamegatze.authorization.configuration.security.details.UsersDetails;
 import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
-import com.kamegatze.authorization.dto.AuthorityDto;
-import com.kamegatze.authorization.dto.ETokenType;
-import com.kamegatze.authorization.dto.ETypeTokenHeader;
-import com.kamegatze.authorization.dto.JwtDto;
-import com.kamegatze.authorization.dto.Login;
-import com.kamegatze.authorization.dto.UsersDto;
+import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.exception.RefreshTokenIsNullException;
 import com.kamegatze.authorization.exception.UserNotExistException;
 import com.kamegatze.authorization.exception.UsersExistException;
@@ -21,7 +16,6 @@ import com.kamegatze.authorization.services.JwtService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +47,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -248,7 +243,7 @@ class AuthorizationServiceImplTest {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         Login login = Login.builder()
                 .login("kamegatze")
-                .password("fgrgdddsdvbhgvbbfgrewert")
+                .credentials("fgrgdddsdvbhgvbbfgrewert")
                 .build();
 
         Users users = Users.builder()
@@ -256,7 +251,7 @@ class AuthorizationServiceImplTest {
                 .name("Aleksey Shirayev")
                 .email("aleksi.aleksi2014@yandex.ru")
                 .login("kamegatze")
-                .password(bCryptPasswordEncoder.encode(login.getPassword()))
+                .password(bCryptPasswordEncoder.encode(login.getCredentials()))
                 .authorities(
                         List.of(Authority.builder()
                         .id(UUID.randomUUID())
@@ -267,7 +262,7 @@ class AuthorizationServiceImplTest {
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 new UsersDetails(users),
                 bCryptPasswordEncoder.encode(
-                        login.getPassword()
+                        login.getCredentials()
                 )
         );
         doReturn(
