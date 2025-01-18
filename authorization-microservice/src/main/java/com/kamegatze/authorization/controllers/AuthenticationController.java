@@ -41,9 +41,9 @@ public class AuthenticationController {
     )
     @GetMapping("/info-user-by-login")
     public ResponseEntity<InfoAboutUser> handleExistUserByLogin(@RequestParam(value = "login", required = true)
-                                                           @Parameter(description = "login user", name = "login",
-                                                                   example = "kamegatze", required = true)
-                                                                    String login) {
+                                                                @Parameter(description = "login user", name = "login",
+                                                                        example = "kamegatze", required = true)
+                                                                String login) {
         InfoAboutUser infoAboutUser = authorizationService.getInfoAboutUserByLogin(login);
         return ResponseEntity.ok(infoAboutUser);
     }
@@ -61,7 +61,7 @@ public class AuthenticationController {
                 .status(HttpStatus.CREATED)
                 .build();
         return ResponseEntity.created(uri.path("/api/auth/info/user/{id}")
-                .build(Map.of("id", usersSave.getId())))
+                        .build(Map.of("id", usersSave.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
@@ -89,7 +89,7 @@ public class AuthenticationController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(isAuthentication);
     }
-    
+
     @GetMapping("/is-authentication-via-response-code")
     public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
         var isAuthentication = authorizationService.isAuthenticationUser(request);

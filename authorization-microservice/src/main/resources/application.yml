@@ -44,12 +44,21 @@ logging:
 
 token:
   cookie:
-    name: __Host-auth-token
-    path: /
-    domain:
-    max-age: '${app.refresh-token}'
-    http-only: true
-    secure: true
+    jwt:
+      access-token:
+        name: __Host-access-token
+        path: /
+        domain:
+        max-age: '${app.access-token}'
+        http-only: true
+        secure: true
+      refresh-token:
+        name: __Host-refresh-token
+        path: /
+        domain:
+        max-age: '${app.refresh-token}'
+        http-only: true
+        secure: true
 
 rsa:
   private-key: classpath:certs/private.pem

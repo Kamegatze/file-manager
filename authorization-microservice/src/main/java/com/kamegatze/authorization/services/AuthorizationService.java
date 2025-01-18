@@ -31,7 +31,7 @@ public interface AuthorizationService {
                         String loginOrEmail);
 
     void isUserValidateAuthenticationCode(@NotBlank @NotEmpty @NotNull @Size(min = 6, max = 6, message = "Your code must 6 sign")
-                  String code, @NotEmpty @NotNull @NotBlank @Size(min = 5, message = "Your login must more 4 sign") String login);
+                                          String code, @NotEmpty @NotNull @NotBlank @Size(min = 5, message = "Your login must more 4 sign") String login);
 
     void changePassword(@Valid ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException;
 

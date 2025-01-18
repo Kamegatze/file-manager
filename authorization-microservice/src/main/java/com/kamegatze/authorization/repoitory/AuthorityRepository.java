@@ -10,5 +10,6 @@ import java.util.UUID;
 
 public interface AuthorityRepository extends JpaRepository<Authority, UUID> {
     Optional<Authority> findByName(EAuthority authority);
+
     List<Authority> findAllByIdIn(List<UUID> uuids);
 }

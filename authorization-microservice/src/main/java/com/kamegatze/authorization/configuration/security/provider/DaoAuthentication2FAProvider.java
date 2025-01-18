@@ -13,13 +13,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class DaoAuthentication2FAProvider extends DaoAuthenticationProvider {
 
-    private UserDetailsService userDetailsService;
     private final MFATokenService mfaTokenService;
+    private UserDetailsService userDetailsService;
 
     public DaoAuthentication2FAProvider(MFATokenService mfaTokenService) {
         super();
         this.mfaTokenService = mfaTokenService;
     }
+
     public DaoAuthentication2FAProvider(PasswordEncoder passwordEncoder, MFATokenService mfaTokenService) {
         super(passwordEncoder);
         this.mfaTokenService = mfaTokenService;
@@ -33,7 +34,7 @@ public class DaoAuthentication2FAProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        UsersDetails userDetails = (UsersDetails)userDetailsService
+        UsersDetails userDetails = (UsersDetails) userDetailsService
                 .loadUserByUsername((String) authentication.getPrincipal());
         Users users = userDetails.getUsers();
         if (!users.isEnable2fa()) {

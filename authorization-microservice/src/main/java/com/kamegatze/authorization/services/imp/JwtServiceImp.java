@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -34,12 +36,22 @@ public class JwtServiceImp implements JwtService {
 
     @Override
     public String generateAccess(UserDetails usersDetails) {
-        return generateToken(usersDetails, timeAccess);
+        return generateToken(usersDetails.getUsername(), usersDetails.getAuthorities(), timeAccess);
+    }
+
+    @Override
+    public String generateAccess(String username, List<GrantedAuthority> grantedAuthorities) {
+        return generateToken(username, grantedAuthorities, timeAccess);
     }
 
     @Override
     public String generateRefresh(UserDetails usersDetails) {
-        return generateToken(usersDetails, timeRefresh);
+        return generateToken(usersDetails.getUsername(), usersDetails.getAuthorities(), timeRefresh);
+    }
+
+    @Override
+    public String generateRefresh(String username, List<GrantedAuthority> grantedAuthorities) {
+        return generateToken(username, grantedAuthorities, timeRefresh);
     }
 
     @Override
@@ -68,18 +80,18 @@ public class JwtServiceImp implements JwtService {
     }
 
 
-    private String generateToken(UserDetails usersDetails, Integer time) {
+    private String generateToken(String username, Collection<? extends GrantedAuthority> grantedAuthorities, Integer time) {
         Instant now = Instant.now();
         StringBuilder stringBuilder = new StringBuilder();
-        for (GrantedAuthority authority : usersDetails.getAuthorities()) {
-           stringBuilder.append(authority.getAuthority()).append(" ");
+        for (GrantedAuthority authority : grantedAuthorities) {
+            stringBuilder.append(authority.getAuthority()).append(" ");
         }
         String authorities = stringBuilder.toString();
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer(issuer)
                 .issuedAt(now)
                 .expiresAt(now.plus(time, ChronoUnit.MINUTES))
-                .subject(usersDetails.getUsername())
+                .subject(username)
                 .claim("authority", authorities)
                 .build();
 

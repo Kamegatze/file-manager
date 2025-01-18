@@ -1,5 +1,6 @@
 package com.kamegatze.authorization.remote.security.converter;
 
+import com.kamegatze.authorization.remote.security.jwt.JwtUtility;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 @Setter
@@ -21,7 +23,8 @@ public class CookieAuthenticationConverter implements AuthenticationConverter {
 
     private Charset credentialsCharset;
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
-    private String cookieName;
+    private String cookieAccessName;
+    private String cookieRefreshName;
 
     public CookieAuthenticationConverter(AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
         this.credentialsCharset = StandardCharsets.UTF_8;
@@ -34,15 +37,27 @@ public class CookieAuthenticationConverter implements AuthenticationConverter {
 
     @Override
     public Authentication convert(HttpServletRequest request) {
-        Optional<Cookie> cookieOptional = Arrays.stream(request.getCookies())
-                .filter(cookie -> cookie.getName().equals(cookieName))
-                .findFirst();
-
-        if (cookieOptional.isEmpty()) {
+        if (Objects.isNull(request.getCookies())) {
             return null;
         }
-        String token = cookieOptional.get().getValue();
 
-        return new BearerTokenAuthenticationToken(token);
+        Optional<Cookie> cookieAccessOptional = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(cookieAccessName)).findFirst();
+
+        Optional<Cookie> cookieRefreshOptional = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(cookieRefreshName)).findFirst();
+
+        if (cookieAccessOptional.isEmpty() || cookieRefreshOptional.isEmpty()) {
+            return null;
+        }
+
+        Cookie accessToken = cookieAccessOptional.get();
+        Cookie refreshToken = cookieRefreshOptional.get();
+
+        if (JwtUtility.isExpired(accessToken.getValue())) {
+            if (JwtUtility.isExpired(refreshToken.getValue())) {
+                return null;
+            }
+            return new BearerTokenAuthenticationToken(refreshToken.getValue());
+        }
+        return new BearerTokenAuthenticationToken(accessToken.getValue());
     }
 }

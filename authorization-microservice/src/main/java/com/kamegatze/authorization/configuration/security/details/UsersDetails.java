@@ -19,7 +19,7 @@ public class UsersDetails implements UserDetails {
     public UsersDetails(Users users) {
         this.users = users;
         this.authorityList = users.getAuthorities()
-                .stream().map(item -> new SimpleGrantedAuthority(item.getName().name())).toList();;
+                .stream().map(item -> new SimpleGrantedAuthority(item.getName().name())).toList();
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -276,6 +277,8 @@ class AuthorizationServiceImplTest {
                 .tokenAccess(accessToken)
                 .type(ETokenType.Bearer)
                 .build();
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
         //when
         JwtDto result = authorizationService.signin(login, response);
         //then

@@ -30,7 +30,7 @@ public class AsyncConfiguration implements AsyncConfigurer {
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new AsyncUncaughtExceptionHandler() {
             @Override
-            public void handleUncaughtException(@NotNull Throwable ex, @NotNull Method method, @NotNull Object ... params) {
+            public void handleUncaughtException(@NotNull Throwable ex, @NotNull Method method, @NotNull Object... params) {
             }
         };
     }

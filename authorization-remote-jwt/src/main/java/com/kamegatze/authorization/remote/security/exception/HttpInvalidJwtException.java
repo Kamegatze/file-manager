@@ -5,6 +5,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 public class HttpInvalidJwtException extends AuthenticationException {
     private final HttpClientErrorException httpClientErrorException;
+
     public HttpInvalidJwtException(String msg, Throwable cause) {
         super(msg, cause);
         this.httpClientErrorException = (HttpClientErrorException) cause;

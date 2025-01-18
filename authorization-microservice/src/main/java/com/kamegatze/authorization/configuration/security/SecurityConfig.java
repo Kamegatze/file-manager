@@ -6,6 +6,7 @@ import com.kamegatze.authorization.configuration.security.provider.DaoAuthentica
 import com.kamegatze.authorization.dto.CookieProperties;
 import com.kamegatze.authorization.model.EAuthority;
 import com.kamegatze.authorization.remote.security.filter.CookieFilter;
+import com.kamegatze.authorization.services.JwtService;
 import com.kamegatze.authorization.services.MFATokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,9 +30,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collection;
@@ -49,6 +49,7 @@ public class SecurityConfig {
     private final CookieProperties cookieProperties;
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtDecoder jwtDecoder;
+    private final JwtService jwtService;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -73,7 +74,7 @@ public class SecurityConfig {
     }
 
     private CookieFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieFilter(cookieProperties.getName(), authenticationManager, handlerExceptionResolver);
+        return new CookieFilter(cookieProperties.getAccessToken().getName(), cookieProperties.getRefreshToken().getName(), authenticationManager, handlerExceptionResolver, jwtService);
     }
 
     private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
@@ -89,6 +90,7 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
         return converter;
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            AuthenticationManager authenticationManager) throws Exception {
@@ -116,10 +118,7 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .csrf(csrf -> csrf.csrfTokenRepository(new CookieCsrfTokenRepository())
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .sessionAuthenticationStrategy((authentication, request, response) -> {}));
+                .csrf(CsrfConfigurer::disable);
         return http.build();
     }
 }

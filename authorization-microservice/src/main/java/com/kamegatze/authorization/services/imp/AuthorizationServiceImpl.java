@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -68,6 +69,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
+
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
@@ -122,19 +124,24 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String tokenAccess = jwtService.generateAccess((UsersDetails) authentication.getPrincipal());
         String tokenRefresh = jwtService.generateRefresh((UsersDetails) authentication.getPrincipal());
 
-        Cookie cookie = new Cookie(cookieProperties.getName(), tokenRefresh);
-        cookie.setPath(cookieProperties.getPath());
-        cookie.setDomain(cookieProperties.getDomain());
-        cookie.setSecure(cookieProperties.isSecure());
-        cookie.setHttpOnly(cookieProperties.isHttpOnly());
-        cookie.setMaxAge(cookieProperties.getMaxAge() * 60);
-        response.addCookie(cookie);
+        setCookie(cookieProperties.getAccessToken(), response, tokenAccess);
+        setCookie(cookieProperties.getRefreshToken(), response, tokenRefresh);
 
         return JwtDto.builder()
                 .tokenAccess(tokenAccess)
                 .refreshToken(tokenRefresh)
                 .type(ETokenType.Bearer)
                 .build();
+    }
+
+    private void setCookie(CookieInfo cookieInfo, HttpServletResponse response, String value) {
+        Cookie cookie = new Cookie(cookieInfo.getName(), value);
+        cookie.setPath(cookieInfo.getPath());
+        cookie.setDomain(cookieInfo.getDomain());
+        cookie.setSecure(cookieInfo.isSecure());
+        cookie.setHttpOnly(cookieInfo.isHttpOnly());
+        cookie.setMaxAge(cookieInfo.getMaxAge() * 60);
+        response.addCookie(cookie);
     }
 
     @Override
@@ -291,10 +298,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private Users getUserViaHttpRequest(HttpServletRequest request) {
-        String jwt = Optional.ofNullable(
-                        request.getHeader(ETypeTokenHeader.Authorization.name())
-                ).map(token -> token.substring(7))
-                .orElseThrow(() -> new NoSuchElementException("Jwt is null"));
+        String jwt = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(cookieProperties.getAccessToken().getName()))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("Jwt is null")).getValue();
         String login = jwtService.getLogin(jwt);
         return usersRepository.findByLogin(login).orElseThrow(
                 () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))

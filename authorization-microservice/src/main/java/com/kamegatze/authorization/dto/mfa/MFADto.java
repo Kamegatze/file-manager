@@ -8,4 +8,5 @@ public record MFADto(
         String qrCode,
         @Schema(description = "Character code", example = "L6JXNF2J7QICON7N")
         String code
-) {}
+) {
+}
