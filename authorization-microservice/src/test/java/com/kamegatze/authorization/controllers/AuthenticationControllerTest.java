@@ -116,6 +116,7 @@ class AuthenticationControllerTest {
                 .login("kamegatze")
                 .credentials("fgrgdddsdvbhgvbbfgrewert")
                 .build();
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
         doReturn(JwtDto.builder()
                 .type(ETokenType.Bearer)
@@ -123,7 +124,6 @@ class AuthenticationControllerTest {
                 .tokenAccess(accessToken)
                 .build()).when(authorizationService).signin(login, response);
 
-        MockHttpServletResponse response = new MockHttpServletResponse();
 
         //when
         ResponseEntity<JwtDto> responseDtoResponseEntity = authenticationController.handleSignInUser(login, response);
@@ -138,52 +138,6 @@ class AuthenticationControllerTest {
 
         assertEquals(responseThen, responseDtoResponseEntity);
         verify(authorizationService).signin(login, response);
-        verifyNoMoreInteractions(authorizationService);
-    }
-
-    @Test
-    @DisplayName("Проверка есть ли jwt токены в header и валидация refresh token")
-    void handleIsAuthenticationUser_RequestIsValid_ReturnsTrue() throws ParseException {
-        //given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(ETypeTokenHeader.Authorization.name(), String.format("Bearer %s", accessToken));
-        request.addHeader(ETypeTokenHeader.AuthorizationRefresh.name(), refreshToken);
-        doReturn(Boolean.TRUE)
-                .when(authorizationService).isAuthenticationUser(request);
-        //when
-        ResponseEntity<Boolean> result = authenticationController.handleIsAuthenticationUser(request);
-        //then
-        ResponseEntity<Boolean> responseThen = ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Boolean.TRUE);
-        assertEquals(result, responseThen);
-        verify(authorizationService).isAuthenticationUser(request);
-        verifyNoMoreInteractions(authorizationService);
-    }
-
-    @Test
-    @DisplayName("Аунтефикация через refresh token")
-    void handleAuthenticationUserUseRefreshToken_RequestIsValid_ReturnsJwtDto() throws ParseException, RefreshTokenIsNullException {
-        //given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(ETypeTokenHeader.AuthorizationRefresh.name(), refreshToken);
-        doReturn(JwtDto.builder()
-                .tokenAccess(accessToken)
-                .refreshToken(refreshToken)
-                .type(ETokenType.Bearer)
-                .build()).when(authorizationService).authenticationViaRefreshToken(request);
-        //when
-        ResponseEntity<JwtDto> result = authenticationController.handleAuthenticationUserUseRefreshToken(request);
-        //then
-        ResponseEntity<JwtDto> responseThen = ResponseEntity.status(HttpStatus.OK)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(JwtDto.builder()
-                                        .refreshToken(refreshToken)
-                                        .tokenAccess(accessToken)
-                                        .type(ETokenType.Bearer)
-                                        .build());
-        assertEquals(result, responseThen);
-        verify(authorizationService).authenticationViaRefreshToken(request);
         verifyNoMoreInteractions(authorizationService);
     }
 

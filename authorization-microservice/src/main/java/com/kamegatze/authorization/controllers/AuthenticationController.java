@@ -77,35 +77,14 @@ public class AuthenticationController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
     }
-
-    @Operation(
-            summary = "Check user is authentication via refresh token",
-            description = "Check user is authentication via refresh token. Check on empty access, refresh token and validation refresh token. In headers must be token access and refresh"
-    )
-    @GetMapping("/is-authentication")
-    public ResponseEntity<Boolean> handleIsAuthenticationUser(HttpServletRequest request) throws ParseException {
-        Boolean isAuthentication = authorizationService.isAuthenticationUser(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(isAuthentication);
-    }
-
-    @GetMapping("/is-authentication-via-response-code")
-    public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
-        var isAuthentication = authorizationService.isAuthenticationUser(request);
-        return isAuthentication ? ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @Operation(
-            summary = "Authorization via refresh token",
-            description = "Authorization via refresh token, for update access and refresh token. In headers must be refresh token"
-    )
-    @GetMapping("/authentication")
-    public ResponseEntity<JwtDto> handleAuthenticationUserUseRefreshToken(HttpServletRequest request)
-            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException {
-        JwtDto jwtDto = authorizationService.authenticationViaRefreshToken(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(jwtDto);
-    }
+//
+//    @Operation(
+//            summary = "Check user is authentication via access token and refresh token",
+//            description = "Check user is authentication via access token and refresh token. Check on empty access, refresh token and validation refresh token. In cookie must be token access and refresh. Return 200 if the user authenticate or 403 if the user unauthorized"
+//    )
+//    @GetMapping("/is-authentication-via-response-code")
+//    public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
+//        var isAuthentication = authorizationService.isAuthenticationUser(request);
+//        return isAuthentication ? ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//    }
 }

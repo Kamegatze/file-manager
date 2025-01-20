@@ -30,7 +30,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collection;
@@ -100,7 +100,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers("/api/v1/auth/service/**", String.format("/%s/**", applicationName), "/error", "/csrf").permitAll()
-                                .requestMatchers("/api/v1/authentication/micro-service/**", "/api/v1/account/**")
+                                .requestMatchers("/api/v1/auth/is-authentication", "/api/v1/account/**")
                                 .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                                 .anyRequest().authenticated()
                 )
@@ -112,12 +112,10 @@ public class SecurityConfig {
                             oauth2.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint());
                         }
                 )
-                .addFilterAfter(cookieFilter(authenticationManager), CsrfFilter.class)
-//                .authenticationProvider(authenticationProvider())
+                .addFilterAt(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(CsrfConfigurer::disable);
         return http.build();
     }

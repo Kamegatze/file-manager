@@ -146,16 +146,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isAuthenticationUser(HttpServletRequest request) throws ParseException {
-        Optional<String> tokenAccessOptional = Optional.ofNullable(
-                request.getHeader(
-                        ETypeTokenHeader.Authorization.name()
-                )
-        );
-        Optional<String> refreshTokenOptional = Optional.ofNullable(
-                request.getHeader(
-                        ETypeTokenHeader.AuthorizationRefresh.name()
-                )
-        );
+        Optional<String> tokenAccessOptional = Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getAccessToken().getName()))
+                .findFirst()
+                .map(Cookie::getValue);
+
+        Optional<String> refreshTokenOptional = Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getRefreshToken().getName()))
+                .findFirst()
+                .map(Cookie::getValue);
+
         if (tokenAccessOptional.isEmpty() && refreshTokenOptional.isEmpty()) {
             return Boolean.FALSE;
         }
@@ -164,7 +164,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             String tokenRefresh = refreshTokenOptional.get();
             return tokenValid(tokenRefresh);
         }
-        String token = tokenAccessOptional.get().substring(7);
+        String token = tokenAccessOptional.get();
 
         if (refreshTokenOptional.isEmpty()) {
             return tokenValid(token);
