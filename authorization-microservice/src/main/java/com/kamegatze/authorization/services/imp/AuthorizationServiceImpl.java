@@ -141,6 +141,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         cookie.setSecure(cookieInfo.isSecure());
         cookie.setHttpOnly(cookieInfo.isHttpOnly());
         cookie.setMaxAge(cookieInfo.getMaxAge() * 60);
+        cookie.setAttribute("SameSite", cookieInfo.getSameSite());
         response.addCookie(cookie);
     }
 

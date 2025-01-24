@@ -14,4 +14,5 @@ public class CookieInfo {
     private int maxAge;
     private boolean httpOnly;
     private boolean secure;
+    private String sameSite;
 }
