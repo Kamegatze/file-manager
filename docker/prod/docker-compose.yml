@@ -2,8 +2,12 @@ version: '3.5'
 
 services:
   nginx:
+    restart: always
     image: nginx
     container_name: nginx
+    networks:
+      - isolated
+      - net
     ports:
       - "8080:80"
     volumes:
@@ -17,19 +21,13 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=authorization
     image: postgres:13.11-bullseye
+    networks:
+      - isolated
+      - net
     ports:
       - '5434:5432'
     volumes:
-      - ./authorization-file-manager/data:/var/lib/postgresql/data
-
-  eureka-sever:
-    container_name: eureka-server
-    build:
-      context: ../../eureka-server
-    ports:
-      - "8081:8081"
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://eureka-sever:8081/eureka
+      - ./database/authorization-file-manager/data:/var/lib/postgresql/data
 
   file-manager-file-system:
     container_name: file-manager-file-system
@@ -38,50 +36,104 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=file_manager
     image: postgres:13.11-bullseye
+    networks:
+      - isolated
+      - net
     ports:
       - '5433:5432'
     volumes:
-      - ./file-manager-file-system/data:/var/lib/postgresql/data
+      - ./database/file-manager-file-system/data:/var/lib/postgresql/data
+
+  eureka-server:
+    restart: always
+    container_name: eureka-server
+    build:
+      context: ../../eureka-server
+    networks:
+      - isolated
+    ports:
+      - "8081"
+    environment:
+      - eureka.instance.prefer-ip-address=true
+      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
 
   authorization-microservice:
+    restart: always
     container_name: authorization-microservice
     build:
       context: ../../authorization-microservice
     depends_on:
       - kafka-file-manager
-      - eureka-sever
+      - eureka-server
       - authorization-file-manager
+    networks:
+      - isolated
     ports:
-      - "9200:9200"
+      - "9200"
     environment:
       - spring.datasource.username=postgres
       - spring.datasource.password=postgres
       - spring.datasource.url=jdbc:postgresql://authorization-file-manager:5432/authorization
       - spring.kafka.bootstrap-servers=kafka-file-manager:29092
-      - eureka.client.service-url.defaultZone=http://eureka-sever:8081/eureka
-  #  file_manager:
-  #    container_name: file_manager
-  #    build:
-  #      context: ../../file_manager
-  #    depends_on:
-  #      - kafka
-  #    ports:
-  #      - "9000:9000"
-  #    environment:
-  #      - SPRING_DATASOURCE_USERNAME=postgres
-  #      - SPRING_DATASOURCE_PASSWORD=postgres
-  #      - SPRING_DATASOURCE_URL=jdbc:postgresql://file-manager-file-system:5432/file_manager
-  #      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-file-manager:29092
-  #     - SERVICE_AUTHENTICATION_IS-AUTHENTICATION_HOST=authorization-microservice
+      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+
+  file_manager:
+    restart: always
+    container_name: file_manager
+    build:
+      context: ../../file_manager
+    depends_on:
+      - kafka-file-manager
+      - eureka-server
+      - file-manager-file-system
+    networks:
+      - isolated
+    ports:
+      - "9000"
+    environment:
+      - spring.datasource.username=postgres
+      - spring.datasource.password=postgres
+      - spring.datasource.url=jdbc:postgresql://file-manager-file-system:5432/file_manager
+      - spring.kafka.bootstrap-servers=kafka-file-manager:29092
+      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+
+  doc-service:
+    restart: always
+    container_name: doc-service
+    build:
+      context: ../../doc-service
+    depends_on:
+      - authorization-file-manager
+      - file_manager
+      - eureka-server
+    networks:
+      - isolated
+    ports:
+      - "8082"
+    environment:
+      - spring.cloud.gateway.routes[0].id=authorization-microservice
+      - spring.cloud.gateway.routes[0].uri=lb://authorization-microservice:9200
+      - spring.cloud.gateway.routes[0].predicates[0]=Path=/authorization-microservice/**
+      - spring.cloud.gateway.routes[1].id=file-manager
+      - spring.cloud.gateway.routes[1].uri=lb://file-manager:9000
+      - spring.cloud.gateway.routes[1].predicates[0]=Path=/file-manager/**
+      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+
   zookeeper-file-manager:
+    restart: always
     container_name: zookeeper-file-manager
     image: zookeeper:latest
+    networks:
+      - isolated
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_SERVER_ID: 1
     ports:
-      - "22181:2181"
+      - "2181"
     volumes:
       - ./zookeeper/data/datalog:/datalog
       - ./zookeeper/data/data:/data
@@ -92,8 +144,10 @@ services:
     image: bitnami/kafka:latest
     depends_on:
       - zookeeper-file-manager
+    networks:
+      - isolated
     ports:
-      - "29092:29092"
+      - "29092"
     volumes:
       - ./kafka/data:/var/lib/kafka/data
     environment:
@@ -104,3 +158,10 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL_DIFFERENT_HOST:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+
+networks:
+  isolated:
+    internal: true
+  net:
+    driver: bridge
