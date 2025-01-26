@@ -13,6 +13,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./logs/data:/var/log/nginx
+      - ./nginx/js:/etc/nginx/js
 
   authorization-file-manager:
     container_name: authorization-file-manager
@@ -77,6 +78,16 @@ services:
       - spring.kafka.bootstrap-servers=kafka-file-manager:29092
       - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
       - eureka.instance.prefer-ip-address=true
+#      - logging.level.org.springframework=debug
+      - token.cookie.jwt.access-token.domain=desktop-vao5je6
+      - token.cookie.jwt.access-token.name=access-token
+      - token.cookie.jwt.access-token.secure=false
+      - token.cookie.jwt.access-token.sameSite=Strict
+      - token.cookie.jwt.refresh-token.domain=desktop-vao5je6
+      - token.cookie.jwt.refresh-token.name=refresh-token
+      - token.cookie.jwt.refresh-token.secure=false
+      - token.cookie.jwt.refresh-token.sameSite=Strict
+
 
   file_manager:
     restart: always
@@ -90,7 +101,7 @@ services:
     networks:
       - isolated
     ports:
-      - "9000"
+      - "9000:9000"
     environment:
       - spring.datasource.username=postgres
       - spring.datasource.password=postgres
@@ -98,6 +109,9 @@ services:
       - spring.kafka.bootstrap-servers=kafka-file-manager:29092
       - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
       - eureka.instance.prefer-ip-address=true
+      - token.cookie.jwt.access-token.name=access-token
+      - token.cookie.jwt.refresh-token.name=refresh-token
+#      - logging.level.org.springframework=debug
 
   doc-service:
     restart: always

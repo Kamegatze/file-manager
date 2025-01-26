@@ -45,9 +45,9 @@ token:
   cookie:
     jwt:
       access-token:
-        name: __Host-access-token
+        name: access-token
       refresh-token:
-        name: __Host-refresh-token
+        name: refresh-token
 
 eureka:
   client:

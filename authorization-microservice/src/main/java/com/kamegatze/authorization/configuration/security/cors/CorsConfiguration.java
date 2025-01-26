@@ -19,19 +19,14 @@ public class CorsConfiguration {
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowCredentials(true)
-                        .allowedOrigins("http://localhost:4200/", "http://localhost:8080/")
+                        .allowedOrigins("http://192.168.0.100:4200/", "http://192.168.0.100:8080/, http://localhost:4200/, http://localhost:8080/, http://desktop-vao5je6:4200, http://desktop-vao5je6:8080")
                         .allowedHeaders(
                                 HttpHeaders.CONTENT_TYPE,
-                                HttpHeaders.ACCEPT,
-                                HttpHeaders.AUTHORIZATION,
-                                ETypeTokenHeader.AuthorizationRefresh.name()
+                                HttpHeaders.ACCEPT
                         )
                         .allowedMethods(
-                                HttpMethod.GET.name(),
-                                HttpMethod.POST.name(),
-                                HttpMethod.PUT.name(),
-                                HttpMethod.DELETE.name(),
-                                HttpMethod.OPTIONS.name()
+                                HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(),
+                                HttpMethod.OPTIONS.name(), HttpMethod.PATCH.name(), HttpMethod.HEAD.name(), HttpMethod.TRACE.name()
                         )
                         .maxAge(3600L);
             }
