@@ -3,7 +3,8 @@ version: '3.5'
 services:
   nginx:
     restart: always
-    image: nginx
+    build:
+      context: ./images/nginx
     container_name: nginx
     networks:
       - isolated
@@ -11,9 +12,12 @@ services:
     ports:
       - "8080:80"
     volumes:
+      - ./nginx/certificate:/etc/nginx/certificate
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./logs/data:/var/log/nginx
       - ./nginx/js:/etc/nginx/js
+
+    
 
   authorization-file-manager:
     container_name: authorization-file-manager
@@ -44,6 +48,17 @@ services:
       - '5433:5432'
     volumes:
       - ./database/file-manager-file-system/data:/var/lib/postgresql/data
+  
+  file-manager-front:
+    container_name: file-manager-front
+    restart: always
+    build:
+      context: ../../../file-manager-front
+    networks:
+      - isolated
+    ports:
+      - "4200"
+
 
   eureka-server:
     restart: always
@@ -55,8 +70,8 @@ services:
     ports:
       - "8081"
     environment:
-      - eureka.instance.prefer-ip-address=true
-      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
+      - eureka.client.service-url.defaultZone=${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+      - eureka.instance.prefer-ip-address=${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
 
   authorization-microservice:
     restart: always
@@ -72,21 +87,21 @@ services:
     ports:
       - "9200"
     environment:
-      - spring.datasource.username=postgres
-      - spring.datasource.password=postgres
-      - spring.datasource.url=jdbc:postgresql://authorization-file-manager:5432/authorization
-      - spring.kafka.bootstrap-servers=kafka-file-manager:29092
-      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
-      - eureka.instance.prefer-ip-address=true
-#      - logging.level.org.springframework=debug
-      - token.cookie.jwt.access-token.domain=desktop-vao5je6
-      - token.cookie.jwt.access-token.name=access-token
-      - token.cookie.jwt.access-token.secure=false
-      - token.cookie.jwt.access-token.sameSite=Strict
-      - token.cookie.jwt.refresh-token.domain=desktop-vao5je6
-      - token.cookie.jwt.refresh-token.name=refresh-token
-      - token.cookie.jwt.refresh-token.secure=false
-      - token.cookie.jwt.refresh-token.sameSite=Strict
+      - spring.config.import=optional:file:./.env[.properties]
+      - spring.datasource.username=${AUTHORIZATION_DATABASE_USERNAME}
+      - spring.datasource.password=${AUTHORIZATION_DATABASE_PASSWORD}
+      - spring.datasource.url=${AUTHORIZATION_DATABASE_URL}
+      - spring.kafka.bootstrap-servers=${KAFKA_URL}
+      - eureka.client.service-url.defaultZone=${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+      - eureka.instance.prefer-ip-address=${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
+      - token.cookie.jwt.access-token.domain=${APPLICATION_DOMAIN}
+      - token.cookie.jwt.access-token.name=${NAME_COOKIE_TOKEN_ACCESS_TOKEN}
+      - token.cookie.jwt.access-token.secure=${COOKIE_SECURE}
+      - token.cookie.jwt.access-token.sameSite=${COOKIE_SAME_SITE}
+      - token.cookie.jwt.refresh-token.domain=${APPLICATION_DOMAIN}
+      - token.cookie.jwt.refresh-token.name=${NAME_COOKIE_TOKEN_REFRESH_TOKEN}
+      - token.cookie.jwt.refresh-token.secure=${COOKIE_SECURE}
+      - token.cookie.jwt.refresh-token.sameSite=${COOKIE_SAME_SITE}
 
 
   file_manager:
@@ -101,16 +116,17 @@ services:
     networks:
       - isolated
     ports:
-      - "9000:9000"
+      - "9000"
     environment:
-      - spring.datasource.username=postgres
-      - spring.datasource.password=postgres
-      - spring.datasource.url=jdbc:postgresql://file-manager-file-system:5432/file_manager
-      - spring.kafka.bootstrap-servers=kafka-file-manager:29092
-      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
-      - eureka.instance.prefer-ip-address=true
-      - token.cookie.jwt.access-token.name=access-token
-      - token.cookie.jwt.refresh-token.name=refresh-token
+      - spring.config.import=optional:file:./.env[.properties]
+      - spring.datasource.username=${FILE_MANAGER_USERNAME}
+      - spring.datasource.password=${FILE_MANAGER_PASSWORD}
+      - spring.datasource.url=${FILE_MANAGER_DATABASE_URL}
+      - spring.kafka.bootstrap-servers=${KAFKA_URL}
+      - eureka.client.service-url.defaultZone=${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+      - eureka.instance.prefer-ip-address=${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
+      - token.cookie.jwt.access-token.name=${NAME_COOKIE_TOKEN_ACCESS_TOKEN}
+      - token.cookie.jwt.refresh-token.name=${NAME_COOKIE_TOKEN_REFRESH_TOKEN}
 #      - logging.level.org.springframework=debug
 
   doc-service:
@@ -127,14 +143,15 @@ services:
     ports:
       - "8082"
     environment:
+      - spring.config.import=optional:file:./.env[.properties]
       - spring.cloud.gateway.routes[0].id=authorization-microservice
       - spring.cloud.gateway.routes[0].uri=lb://authorization-microservice:9200
       - spring.cloud.gateway.routes[0].predicates[0]=Path=/authorization-microservice/**
       - spring.cloud.gateway.routes[1].id=file-manager
       - spring.cloud.gateway.routes[1].uri=lb://file-manager:9000
       - spring.cloud.gateway.routes[1].predicates[0]=Path=/file-manager/**
-      - eureka.client.service-url.defaultZone=http://eureka-server:8081/eureka
-      - eureka.instance.prefer-ip-address=true
+      - eureka.client.service-url.defaultZone=${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+      - eureka.instance.prefer-ip-address=${EUREKA_INSTANCE_PREFER_IP_ADDRESS}
 
   zookeeper-file-manager:
     restart: always
