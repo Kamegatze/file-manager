@@ -18,6 +18,7 @@ public class MFATokenServiceImpl implements MFATokenService {
     private final SecretGenerator secretGenerator;
     private final QrGenerator qrGenerator;
     private final CodeVerifier codeVerifier;
+
     @Override
     public String generateSecretKey() {
         return secretGenerator.generate();

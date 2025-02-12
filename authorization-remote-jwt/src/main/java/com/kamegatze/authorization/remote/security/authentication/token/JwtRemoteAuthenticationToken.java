@@ -36,6 +36,7 @@ public class JwtRemoteAuthenticationToken<T extends JWT> extends AbstractAuthent
     public T getToken() {
         return token;
     }
+
     @Override
     public Object getCredentials() {
         return credentials;

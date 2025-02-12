@@ -39,8 +39,9 @@ public class BeanConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return  PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
     @Bean
     public JwtDecoder nimbusJwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(rsaKeyProperties.getPublicKey()).build();
@@ -60,17 +61,17 @@ public class BeanConfig {
     }
 
     @Bean
-    public SecretGenerator secretGenerator(){
+    public SecretGenerator secretGenerator() {
         return new DefaultSecretGenerator(16);
     }
 
     @Bean
-    public QrGenerator qrGenerator(){
+    public QrGenerator qrGenerator() {
         return new ZxingPngQrGenerator();
     }
 
     @Bean
-    public CodeVerifier codeVerifier(){
+    public CodeVerifier codeVerifier() {
         return new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
     }
 }

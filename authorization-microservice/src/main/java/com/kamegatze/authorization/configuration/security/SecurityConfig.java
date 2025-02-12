@@ -1,8 +1,12 @@
 package com.kamegatze.authorization.configuration.security;
 
+import com.kamegatze.authorization.configuration.security.details.UsersDetailsService;
 import com.kamegatze.authorization.configuration.security.http.entry.point.ExceptionEntryPointContainer;
 import com.kamegatze.authorization.configuration.security.provider.DaoAuthentication2FAProvider;
+import com.kamegatze.authorization.dto.CookieProperties;
 import com.kamegatze.authorization.model.EAuthority;
+import com.kamegatze.authorization.remote.security.filter.CookieFilter;
+import com.kamegatze.authorization.services.JwtService;
 import com.kamegatze.authorization.services.MFATokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,15 +20,18 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Collection;
 
@@ -35,10 +42,14 @@ import java.util.Collection;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    private final UsersDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final ExceptionEntryPointContainer exceptionEntryPointContainer;
     private final MFATokenService mfaTokenService;
+    private final CookieProperties cookieProperties;
+    private final HandlerExceptionResolver handlerExceptionResolver;
+    private final JwtDecoder jwtDecoder;
+    private final JwtService jwtService;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -54,7 +65,16 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.authenticationProvider(authenticationProvider());
+
+        JwtAuthenticationProvider jwtAuthenticationProvider = new JwtAuthenticationProvider(jwtDecoder);
+        jwtAuthenticationProvider.setJwtAuthenticationConverter(customJwtAuthenticationConverter());
+        authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider);
+
         return authenticationManagerBuilder.build();
+    }
+
+    private CookieFilter cookieFilter(AuthenticationManager authenticationManager) {
+        return new CookieFilter(cookieProperties.getAccessToken().getName(), cookieProperties.getRefreshToken().getName(), authenticationManager, handlerExceptionResolver, jwtService);
     }
 
     private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
@@ -70,15 +90,17 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
         return converter;
     }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           AuthenticationManager authenticationManager) throws Exception {
+
+        http
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint()))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/api/v1/auth/service/**", String.format("/%s/**", applicationName)).permitAll()
-                                .requestMatchers("/api/v1/authentication/micro-service/**", "/api/v1/account/**")
+                                .requestMatchers("/api/v1/auth/service/**", String.format("/%s/**", applicationName), "/error", "/csrf").permitAll()
+                                .requestMatchers("/api/v1/auth/is-authentication", "/api/v1/account/**")
                                 .hasAnyAuthority(EAuthority.AUTHORITY_READ.name(), EAuthority.AUTHORITY_WRITE.name())
                                 .anyRequest().authenticated()
                 )
@@ -90,10 +112,11 @@ public class SecurityConfig {
                             oauth2.authenticationEntryPoint(exceptionEntryPointContainer.getExceptionEntryPoint());
                         }
                 )
-                .authenticationProvider(authenticationProvider())
+                .addFilterAt(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults());
-
+                .httpBasic(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(CsrfConfigurer::disable);
         return http.build();
     }
 }

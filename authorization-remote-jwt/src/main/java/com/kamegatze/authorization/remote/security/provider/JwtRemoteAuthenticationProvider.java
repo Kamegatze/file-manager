@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 public class JwtRemoteAuthenticationProvider implements AuthenticationProvider {
 
     private final UserDetailsService userDetailsService;
+
     public JwtRemoteAuthenticationProvider(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }

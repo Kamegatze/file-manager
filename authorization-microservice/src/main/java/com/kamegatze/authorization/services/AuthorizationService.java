@@ -4,6 +4,7 @@ import com.kamegatze.authorization.dto.*;
 import com.kamegatze.authorization.dto.mfa.MFADto;
 import com.kamegatze.authorization.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -17,9 +18,9 @@ import java.util.List;
 
 @Validated
 public interface AuthorizationService {
-    public UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException;
+    UsersDto signup(@Valid UsersDto usersDto) throws UsersExistException;
 
-    public JwtDto signin(@Valid Login login);
+    JwtDto signin(@Valid Login login, HttpServletResponse response);
 
     Boolean isAuthenticationUser(HttpServletRequest request) throws ParseException;
 
@@ -30,7 +31,7 @@ public interface AuthorizationService {
                         String loginOrEmail);
 
     void isUserValidateAuthenticationCode(@NotBlank @NotEmpty @NotNull @Size(min = 6, max = 6, message = "Your code must 6 sign")
-                  String code, @NotEmpty @NotNull @NotBlank @Size(min = 5, message = "Your login must more 4 sign") String login);
+                                          String code, @NotEmpty @NotNull @NotBlank @Size(min = 5, message = "Your login must more 4 sign") String login);
 
     void changePassword(@Valid ChangePasswordDto changePasswordDto) throws NotEqualsPasswordException, EqualsPasswordException;
 

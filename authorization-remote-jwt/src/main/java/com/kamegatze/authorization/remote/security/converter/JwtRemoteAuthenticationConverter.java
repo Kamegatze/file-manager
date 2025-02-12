@@ -67,7 +67,7 @@ public class JwtRemoteAuthenticationConverter implements AuthenticationConverter
         try {
             jwt = JWTParser.parse(authorizationHeader);
             DefaultJWTClaimsVerifier<SecurityContext> claimsVerifier = new DefaultJWTClaimsVerifier<>(
-                jwt.getJWTClaimsSet(), Set.of("iss", "sub", "exp", "iat", "authority")
+                    jwt.getJWTClaimsSet(), Set.of("iss", "sub", "exp", "iat", "authority")
             );
             claimsVerifier.verify(jwt.getJWTClaimsSet(), new SimpleSecurityContext());
         } catch (ParseException | BadJWTException e) {

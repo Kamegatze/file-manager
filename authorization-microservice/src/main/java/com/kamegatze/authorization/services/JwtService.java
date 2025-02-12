@@ -1,16 +1,17 @@
 package com.kamegatze.authorization.services;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import com.kamegatze.authorization.remote.security.jwt.JwtGenerate;
 
 import java.time.Instant;
 import java.util.Map;
 
-public interface JwtService {
-    String generateAccess(UserDetails usersDetails);
-    String generateRefresh(UserDetails usersDetails);
+public interface JwtService extends JwtGenerate {
     String getLogin(String token);
+
     Instant getIssuedAt(String token);
+
     Instant getExpiresAt(String token);
+
     Map<String, Object> getClaims(String token);
 
     Map<String, Object> getHeaders(String token);

@@ -25,11 +25,11 @@ public class KafkaClientTransfer implements ClientTransfer<Object> {
             String json = objectMapper.writeValueAsString(body);
             CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, json);
             future.whenComplete((result, throwable) -> {
-               if (throwable != null) {
-                   log.warn("Message was not sent. Error: {}", throwable.getMessage());
-                   throw new RuntimeException(throwable);
-               }
-               log.info("Sent message: {}, with offset: {}", body, result.getRecordMetadata().offset());
+                if (throwable != null) {
+                    log.warn("Message was not sent. Error: {}", throwable.getMessage());
+                    throw new RuntimeException(throwable);
+                }
+                log.info("Sent message: {}, with offset: {}", body, result.getRecordMetadata().offset());
             });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

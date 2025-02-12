@@ -6,6 +6,7 @@ import com.nimbusds.jwt.JWTParser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -16,10 +17,14 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
+
+    @Value("${token.cookie.jwt.access-token.name}")
+    private String cookieAccessName;
+
     @Override
     public String getLogin(HttpServletRequest request) {
         log.info("Begin get login from jwt token");
-        String token = getToken(request);
+        String token = getToken(request, cookieAccessName);
         JWTClaimsSet jwtClaimsSet;
         try {
             jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
@@ -34,7 +39,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Instant getIssuedAt(HttpServletRequest request) {
         log.info("Begin get issue from jwt token");
-        String token = getToken(request);
+        String token = getToken(request, cookieAccessName);
         JWTClaimsSet jwtClaimsSet;
         try {
             jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
@@ -50,7 +55,7 @@ public class JwtServiceImpl implements JwtService {
     public Instant getExpiresAt(HttpServletRequest request) {
         log.info("Begin get expires from jwt token");
         JWTClaimsSet jwtClaimsSet;
-        String token = getToken(request);
+        String token = getToken(request, cookieAccessName);
         try {
             jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
         } catch (ParseException e) {
@@ -65,7 +70,7 @@ public class JwtServiceImpl implements JwtService {
     public Map<String, Object> getClaims(HttpServletRequest request) {
         log.info("Begin get claims from jwt token");
         JWTClaimsSet jwtClaimsSet;
-        String token = getToken(request);
+        String token = getToken(request, cookieAccessName);
         try {
             jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
         } catch (ParseException e) {
@@ -80,7 +85,7 @@ public class JwtServiceImpl implements JwtService {
     public Map<String, Object> getHeaders(HttpServletRequest request) {
         log.info("Begin get headers from jwt token");
         Map<String, Object> headers;
-        String token = getToken(request);
+        String token = getToken(request, cookieAccessName);
         try {
             headers = JWTParser.parse(token).getHeader().toJSONObject();
         } catch (ParseException e) {

@@ -29,7 +29,8 @@ allprojects {
     dependencies {
         implementation "com.nimbusds:nimbus-jose-jwt:${nimbusJwt}",
         "org.modelmapper:modelmapper:${modelMapperVersion}",
-        'org.liquibase:liquibase-core'
+        'org.liquibase:liquibase-core', 'org.jetbrains:annotations:24.1.0'
+
     }
 
     dependencies {

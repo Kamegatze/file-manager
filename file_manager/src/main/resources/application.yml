@@ -41,6 +41,14 @@ spring:
   application:
     name: file-manager
 
+token:
+  cookie:
+    jwt:
+      access-token:
+        name: access-token
+      refresh-token:
+        name: refresh-token
+
 eureka:
   client:
     service-url:
@@ -50,7 +58,7 @@ logging:
   level:
     org:
       springframework:
-        security: info
+        security: debug
 
 service:
   authentication:

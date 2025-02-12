@@ -21,7 +21,9 @@ import com.kamegatze.authorization.services.MFATokenService;
 import com.kamegatze.authorization.transfer.client.ClientTransfer;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -61,9 +64,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final JwtIssuerValidator jwtValidator;
     private final ClientTransfer<Object> clientTransfer;
     private final MFATokenService mfaTokenService;
+    private final CookieProperties cookieProperties;
+
 
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
+
     @Override
     public UsersDto signup(UsersDto usersDto) throws UsersExistException {
         Users users = Users.builder()
@@ -106,7 +112,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public JwtDto signin(Login login) {
+    public JwtDto signin(Login login, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         login.getLogin(),
@@ -118,6 +124,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String tokenAccess = jwtService.generateAccess((UsersDetails) authentication.getPrincipal());
         String tokenRefresh = jwtService.generateRefresh((UsersDetails) authentication.getPrincipal());
 
+        setCookie(cookieProperties.getAccessToken(), response, tokenAccess);
+        setCookie(cookieProperties.getRefreshToken(), response, tokenRefresh);
+
         return JwtDto.builder()
                 .tokenAccess(tokenAccess)
                 .refreshToken(tokenRefresh)
@@ -125,18 +134,29 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .build();
     }
 
+    private void setCookie(CookieInfo cookieInfo, HttpServletResponse response, String value) {
+        Cookie cookie = new Cookie(cookieInfo.getName(), value);
+        cookie.setPath(cookieInfo.getPath());
+        cookie.setDomain(cookieInfo.getDomain());
+        cookie.setSecure(cookieInfo.isSecure());
+        cookie.setHttpOnly(cookieInfo.isHttpOnly());
+        cookie.setMaxAge(cookieInfo.getMaxAge() * 60);
+        cookie.setAttribute("SameSite", cookieInfo.getSameSite());
+        response.addCookie(cookie);
+    }
+
     @Override
     public Boolean isAuthenticationUser(HttpServletRequest request) throws ParseException {
-        Optional<String> tokenAccessOptional = Optional.ofNullable(
-                request.getHeader(
-                        ETypeTokenHeader.Authorization.name()
-                )
-        );
-        Optional<String> refreshTokenOptional = Optional.ofNullable(
-                request.getHeader(
-                        ETypeTokenHeader.AuthorizationRefresh.name()
-                )
-        );
+        Optional<String> tokenAccessOptional = Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getAccessToken().getName()))
+                .findFirst()
+                .map(Cookie::getValue);
+
+        Optional<String> refreshTokenOptional = Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getRefreshToken().getName()))
+                .findFirst()
+                .map(Cookie::getValue);
+
         if (tokenAccessOptional.isEmpty() && refreshTokenOptional.isEmpty()) {
             return Boolean.FALSE;
         }
@@ -145,7 +165,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             String tokenRefresh = refreshTokenOptional.get();
             return tokenValid(tokenRefresh);
         }
-        String token = tokenAccessOptional.get().substring(7);
+        String token = tokenAccessOptional.get();
 
         if (refreshTokenOptional.isEmpty()) {
             return tokenValid(token);
@@ -279,10 +299,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private Users getUserViaHttpRequest(HttpServletRequest request) {
-        String jwt = Optional.ofNullable(
-                        request.getHeader(ETypeTokenHeader.Authorization.name())
-                ).map(token -> token.substring(7))
-                .orElseThrow(() -> new NoSuchElementException("Jwt is null"));
+        String jwt = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(cookieProperties.getAccessToken().getName()))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("Jwt is null")).getValue();
         String login = jwtService.getLogin(jwt);
         return usersRepository.findByLogin(login).orElseThrow(
                 () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))

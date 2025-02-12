@@ -6,9 +6,9 @@ import com.kamegatze.authorization.remote.security.exception.HttpInvalidJwtExcep
 import com.kamegatze.authorization.remote.security.expired.check.ExpiredCheck;
 import com.kamegatze.authorization.remote.security.filter.model.Authority;
 import com.kamegatze.authorization.remote.security.http.entry.point.ExceptionEntryPoint;
+import com.kamegatze.authorization.remote.security.jwt.JwtUtility;
 import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
@@ -40,7 +40,10 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class JwtRemoteFilter extends OncePerRequestFilter {
 
@@ -74,10 +77,10 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         Optional<Exception> runtimeException = validate(request);
-        if(runtimeException.isPresent()) {
+        if (runtimeException.isPresent()) {
             authenticationFailureHandler.onAuthenticationFailure(request, response,
                     new InvalidBearerTokenException(runtimeException.get().getMessage(),
-                    runtimeException.get()));
+                            runtimeException.get()));
             return;
         }
         List<Authority> authorities;
@@ -92,12 +95,11 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
                 return;
             }
             if (expiredCheck.check(token.get())) {
-                authorities = getAuthoritiesFromToken(token.get());
+                authorities = JwtUtility.getAuthoritiesFromToken(token.get());
             } else {
                 authorities = getAuthorities(request);
             }
-        }
-        catch (HttpClientErrorException exception) {
+        } catch (HttpClientErrorException exception) {
             authenticationFailureHandler.onAuthenticationFailure(request, response,
                     new HttpInvalidJwtException(exception.getMessage(), exception));
             return;
@@ -131,18 +133,6 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         }
     }
 
-    private List<Authority> getAuthoritiesFromToken(String token) {
-        JWTClaimsSet jwtClaimsSet;
-        try {
-            jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        String[] authorityArray = ((String) jwtClaimsSet.getClaim("authority")).split(" ");
-        return Arrays.asList(authorityArray).parallelStream()
-                .map(item -> new Authority(item.trim())).toList();
-    }
-
     private MultiValueMap<String, String> getHttpHeaders(HttpServletRequest request) {
         Enumeration<String> nameOfHeaders = request.getHeaderNames();
         MultiValueMap<String, String> headers = new HttpHeaders();
@@ -159,7 +149,8 @@ public class JwtRemoteFilter extends OncePerRequestFilter {
         return restOperations.exchange(
                 urlIsAuthentication,
                 HttpMethod.GET, new HttpEntity<>(getHttpHeaders(request)),
-                new ParameterizedTypeReference<List<Authority>>() {}
+                new ParameterizedTypeReference<List<Authority>>() {
+                }
         ).getBody();
     }
 

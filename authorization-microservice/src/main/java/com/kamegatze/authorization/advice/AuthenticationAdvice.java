@@ -79,10 +79,10 @@ public class AuthenticationAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(
-                    ResponseDto.builder()
-                            .message(e.getMessage())
-                            .status(HttpStatus.BAD_REQUEST)
-                            .build()
+                        ResponseDto.builder()
+                                .message(e.getMessage())
+                                .status(HttpStatus.BAD_REQUEST)
+                                .build()
                 );
     }
 

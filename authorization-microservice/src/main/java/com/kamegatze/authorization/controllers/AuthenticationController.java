@@ -13,10 +13,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -31,6 +33,7 @@ import java.util.Map;
 public class AuthenticationController {
 
     private final AuthorizationService authorizationService;
+    private final JwtDecoder jwtDecoder;
 
     @Operation(
             summary = "Info user",
@@ -38,9 +41,9 @@ public class AuthenticationController {
     )
     @GetMapping("/info-user-by-login")
     public ResponseEntity<InfoAboutUser> handleExistUserByLogin(@RequestParam(value = "login", required = true)
-                                                           @Parameter(description = "login user", name = "login",
-                                                                   example = "kamegatze", required = true)
-                                                                    String login) {
+                                                                @Parameter(description = "login user", name = "login",
+                                                                        example = "kamegatze", required = true)
+                                                                String login) {
         InfoAboutUser infoAboutUser = authorizationService.getInfoAboutUserByLogin(login);
         return ResponseEntity.ok(infoAboutUser);
     }
@@ -58,7 +61,7 @@ public class AuthenticationController {
                 .status(HttpStatus.CREATED)
                 .build();
         return ResponseEntity.created(uri.path("/api/auth/info/user/{id}")
-                .build(Map.of("id", usersSave.getId())))
+                        .build(Map.of("id", usersSave.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
@@ -68,41 +71,20 @@ public class AuthenticationController {
             description = "Sign in system and get jwt tokens"
     )
     @PostMapping("/signin")
-    public ResponseEntity<JwtDto> handleSignInUser(@RequestBody Login login) {
-        JwtDto jwtDto = authorizationService.signin(login);
+    public ResponseEntity<JwtDto> handleSignInUser(@RequestBody Login login, HttpServletResponse response) {
+        JwtDto jwtDto = authorizationService.signin(login, response);
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(jwtDto);
     }
-
-    @Operation(
-            summary = "Check user is authentication via refresh token",
-            description = "Check user is authentication via refresh token. Check on empty access, refresh token and validation refresh token. In headers must be token access and refresh"
-    )
-    @GetMapping("/is-authentication")
-    public ResponseEntity<Boolean> handleIsAuthenticationUser(HttpServletRequest request) throws ParseException {
-        Boolean isAuthentication = authorizationService.isAuthenticationUser(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(isAuthentication);
-    }
-    
-    @GetMapping("/is-authentication-via-response-code")
-    public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
-        var isAuthentication = authorizationService.isAuthenticationUser(request);
-        return isAuthentication ? ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @Operation(
-            summary = "Authorization via refresh token",
-            description = "Authorization via refresh token, for update access and refresh token. In headers must be refresh token"
-    )
-    @GetMapping("/authentication")
-    public ResponseEntity<JwtDto> handleAuthenticationUserUseRefreshToken(HttpServletRequest request)
-            throws InvalidBearerTokenException, ParseException, RefreshTokenIsNullException, UserNotExistException {
-        JwtDto jwtDto = authorizationService.authenticationViaRefreshToken(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(jwtDto);
-    }
+//
+//    @Operation(
+//            summary = "Check user is authentication via access token and refresh token",
+//            description = "Check user is authentication via access token and refresh token. Check on empty access, refresh token and validation refresh token. In cookie must be token access and refresh. Return 200 if the user authenticate or 403 if the user unauthorized"
+//    )
+//    @GetMapping("/is-authentication-via-response-code")
+//    public ResponseEntity<Void> handleIsAuthenticationViaResponseCode(HttpServletRequest request) throws ParseException {
+//        var isAuthentication = authorizationService.isAuthenticationUser(request);
+//        return isAuthentication ? ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//    }
 }
