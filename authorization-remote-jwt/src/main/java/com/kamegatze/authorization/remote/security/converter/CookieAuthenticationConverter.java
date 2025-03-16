@@ -3,8 +3,6 @@ package com.kamegatze.authorization.remote.security.converter;
 import com.kamegatze.authorization.remote.security.jwt.JwtUtility;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
@@ -17,12 +15,11 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-@Setter
-@Getter
+
 public class CookieAuthenticationConverter implements AuthenticationConverter {
 
-    private Charset credentialsCharset;
-    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
+    private final Charset credentialsCharset;
+    private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
     private String cookieAccessName;
     private String cookieRefreshName;
 
@@ -33,6 +30,30 @@ public class CookieAuthenticationConverter implements AuthenticationConverter {
 
     public CookieAuthenticationConverter() {
         this(new WebAuthenticationDetailsSource());
+    }
+
+    public Charset getCredentialsCharset() {
+        return credentialsCharset;
+    }
+
+    public AuthenticationDetailsSource<HttpServletRequest, ?> getAuthenticationDetailsSource() {
+        return authenticationDetailsSource;
+    }
+
+    public String getCookieAccessName() {
+        return cookieAccessName;
+    }
+
+    public void setCookieAccessName(String cookieAccessName) {
+        this.cookieAccessName = cookieAccessName;
+    }
+
+    public String getCookieRefreshName() {
+        return cookieRefreshName;
+    }
+
+    public void setCookieRefreshName(String cookieRefreshName) {
+        this.cookieRefreshName = cookieRefreshName;
     }
 
     @Override

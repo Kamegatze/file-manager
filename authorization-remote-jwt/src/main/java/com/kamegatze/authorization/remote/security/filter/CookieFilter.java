@@ -9,7 +9,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -30,7 +29,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-@RequiredArgsConstructor
+
 public class CookieFilter extends OncePerRequestFilter {
 
     private final String cookieAccessName;
@@ -40,7 +39,7 @@ public class CookieFilter extends OncePerRequestFilter {
     private final SecurityContextRepository securityContextRepository = new RequestAttributeSecurityContextRepository();
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
-    private JwtGenerate jwtGenerate;
+    private final JwtGenerate jwtGenerate;
 
     public CookieFilter(String cookieAccessName, String cookieRefreshName, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver, JwtGenerate jwtGenerate) {
         this.cookieAccessName = cookieAccessName;
@@ -48,7 +47,6 @@ public class CookieFilter extends OncePerRequestFilter {
         this.authenticationManager = authenticationManager;
         this.authenticationFailureHandler = new AuthenticationEntryPointFailureHandler(
                 new ExceptionEntryPoint(handlerExceptionResolver));
-        ;
         this.jwtGenerate = jwtGenerate;
     }
 
@@ -104,12 +102,12 @@ public class CookieFilter extends OncePerRequestFilter {
             accessCookie.setValue(jwtGenerate.generateAccess(
                     JwtUtility.getUsernameFromToken(accessCookie.getValue()),
                     JwtUtility.getAuthoritiesFromToken(accessCookie.getValue())
-                            .stream().map(authority -> ((GrantedAuthority) new SimpleGrantedAuthority(authority.getAuthority()))).toList()
+                            .stream().map(authority -> ((GrantedAuthority) new SimpleGrantedAuthority(authority.getName()))).toList()
             ));
             refreshCookie.setValue(jwtGenerate.generateRefresh(
                     JwtUtility.getUsernameFromToken(refreshCookie.getValue()),
                     JwtUtility.getAuthoritiesFromToken(refreshCookie.getValue())
-                            .stream().map(authority -> ((GrantedAuthority) new SimpleGrantedAuthority(authority.getAuthority()))).toList()
+                            .stream().map(authority -> ((GrantedAuthority) new SimpleGrantedAuthority(authority.getName()))).toList()
             ));
 
             response.addCookie(accessCookie);

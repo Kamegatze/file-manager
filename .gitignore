@@ -12,6 +12,5 @@
 .sts4-cache
 .gradle
 ./build
-gradle
 .vscode
 amplicode.xml

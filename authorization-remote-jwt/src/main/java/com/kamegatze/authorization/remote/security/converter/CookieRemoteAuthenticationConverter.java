@@ -2,21 +2,13 @@ package com.kamegatze.authorization.remote.security.converter;
 
 import com.kamegatze.authorization.remote.security.authentication.token.JwtRemoteAuthenticationToken;
 import com.kamegatze.authorization.remote.security.jwt.JwtUtility;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.proc.BadJWTException;
-import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Data;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
@@ -25,13 +17,29 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.*;
 
-@Data
+
 public class CookieRemoteAuthenticationConverter implements AuthenticationConverter {
-    private Charset credentialsCharset;
-    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
+    private final Charset credentialsCharset;
+    private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
 
     private String cookieAccessName;
     private String cookieRefreshName;
+
+    public String getCookieAccessName() {
+        return cookieAccessName;
+    }
+
+    public String getCookieRefreshName() {
+        return cookieRefreshName;
+    }
+
+    public void setCookieAccessName(String cookieAccessName) {
+        this.cookieAccessName = cookieAccessName;
+    }
+
+    public void setCookieRefreshName(String cookieRefreshName) {
+        this.cookieRefreshName = cookieRefreshName;
+    }
 
     public CookieRemoteAuthenticationConverter(AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
         this.credentialsCharset = StandardCharsets.UTF_8;
@@ -67,7 +75,7 @@ public class CookieRemoteAuthenticationConverter implements AuthenticationConver
             return new JwtRemoteAuthenticationToken<>(jwt,
                     JwtUtility.getAuthoritiesFromToken(refreshToken.getValue())
                             .stream()
-                            .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
+                            .map(authority -> new SimpleGrantedAuthority(authority.getName()))
                             .toList()
                     );
         }
@@ -75,7 +83,7 @@ public class CookieRemoteAuthenticationConverter implements AuthenticationConver
         return new JwtRemoteAuthenticationToken<>(jwt,
                 JwtUtility.getAuthoritiesFromToken(accessToken.getValue())
                         .stream()
-                        .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
+                        .map(authority -> new SimpleGrantedAuthority(authority.getName()))
                         .toList()
         );
     }
