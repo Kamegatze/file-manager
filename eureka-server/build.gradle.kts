@@ -1,7 +1,7 @@
 plugins {
 	id ("java")
-	id ("org.springframework.boot") version ("3.4.3")
-	id ("io.spring.dependency-management") version ("1.1.7")
+	alias(libs.plugins.org.springframework.boot)
+	alias(libs.plugins.dependency.management)
 }
 
 group = "org.kamegatze"
@@ -18,16 +18,15 @@ repositories {
 	mavenCentral()
 }
 
-val springCloudVersion = "2024.0.0"
 
 dependencies {
-	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-server")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	implementation(libs.spring.cloud.starter.netflix.eureka.server)
+	testImplementation(tests.spring.boot.starter.test)
 }
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+		mavenBom(libs.spring.cloud.dependencies.get().toString())
 	}
 }
 

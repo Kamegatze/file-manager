@@ -1,7 +1,7 @@
 plugins {
 	id ("java")
-	id ("org.springframework.boot") version ("3.4.3")
-	id ("io.spring.dependency-management") version ("1.1.7")
+	alias(libs.plugins.org.springframework.boot)
+	alias(libs.plugins.dependency.management)
 }
 
 group = "org.kamegatze"
@@ -17,19 +17,17 @@ repositories {
 	mavenCentral()
 }
 
-val springCloudVersion = "2024.0.0"
-val swaggerVersion = "2.5.0"
 
 dependencies {
-	implementation ("org.springframework.cloud:spring-cloud-starter-gateway")
-	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:${swaggerVersion}")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	implementation(libs.spring.cloud.starter.gateway)
+	implementation(libs.spring.cloud.starter.netflix.eureka.client)
+	implementation(libs.springdoc.openapi.starter.webflux.ui)
+	testImplementation(tests.spring.boot.starter.test)
 }
 
 dependencyManagement {
 	imports {
-		mavenBom ("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+		mavenBom(libs.spring.cloud.dependencies.get().toString())
 	}
 }
 

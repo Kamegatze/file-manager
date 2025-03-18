@@ -1,8 +1,7 @@
 plugins {
     id ("java")
-    id ("maven-publish")
-    id("org.springframework.boot") version("3.4.3")
-    id("io.spring.dependency-management") version ("1.1.7")
+    alias(libs.plugins.org.springframework.boot)
+    alias(libs.plugins.dependency.management)
 }
 
 val currentVersion = "1.0"
@@ -27,11 +26,9 @@ tasks {
     }
 }
 
-val swaggerAnnotationsVersion = "2.2.22"
-
 dependencies {
-    implementation ("io.swagger.core.v3:swagger-annotations:${swaggerAnnotationsVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    implementation (libs.swagger.annotations)
+    implementation(libs.spring.boot.starter.web)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 }

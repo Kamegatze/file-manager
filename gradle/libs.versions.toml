@@ -1,0 +1,56 @@
+[versions]
+springCloudVersion = "2024.0.0"
+swaggerVersion = "2.8.5"
+nimbusJwt = "9.47"
+modelMapperVersion = "3.2.0"
+jetbrainsAnnotation = "24.1.0"
+org-springframework-boot = "3.4.3"
+dependency-management = "1.1.7"
+swaggerAnnotationsVersion = "2.2.22"
+thymeleafVersion = "3.1.1.RELEASE"
+aerogearOtpVersion = "1.0.0"
+totpVersion = "1.7.1"
+
+[libraries]
+spring-boot-starter-security = {group = "org.springframework.boot", name = "spring-boot-starter-security"}
+spring-boot-starter-data-jpa = {group = "org.springframework.boot", name = "spring-boot-starter-data-jpa"}
+spring-boot-starter-web = {group = "org.springframework.boot", name = "spring-boot-starter-web"}
+spring-boot-starter-validation = {group = "org.springframework.boot", name = "spring-boot-starter-validation"}
+spring-boot-starter-oauth2-resource-server = {group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server"}
+spring-cloud-starter-netflix-eureka-client = {group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-client"}
+spring-cloud-starter-netflix-eureka-server = {group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-server"}
+spring-cloud-starter-gateway = {group = "org.springframework.cloud", name = "spring-cloud-starter-gateway"}
+spring-boot-starter-mail = {group = "org.springframework.boot", name = "spring-boot-starter-mail"}
+
+spring-kafka = {group = "org.springframework.kafka", name = "spring-kafka"}
+
+com-kamegatze-general-dto = {group = "com.kamegatze", name = "general-dto"}
+com-kamegatze-authorization-authorization-remote-jwt = {group = "com.kamegatze.authorization", name = "authorization-remote-jwt"}
+
+postgresql = {group = "org.postgresql", name = "postgresql"}
+lombok = {group = "org.projectlombok", name = "lombok"}
+
+spring-cloud-dependencies = {group = "org.springframework.cloud", name = "spring-cloud-dependencies", version.ref = "springCloudVersion"}
+
+nimbus-jose-jwt = {group = "com.nimbusds", name = "nimbus-jose-jwt", version.ref = "nimbusJwt"}
+modelmapper = {group = "org.modelmapper", name = "modelmapper", version.ref = "modelMapperVersion"}
+liquibase-core = {group = "org.liquibase", name = "liquibase-core"}
+jetbrains-annotations = {group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotation"}
+springdoc-openapi-starter-webmvc-ui = {group = "org.springdoc", name  = "springdoc-openapi-starter-webmvc-ui", version.ref = "swaggerVersion"}
+springdoc-openapi-starter-webflux-ui = {group = "org.springdoc", name = "springdoc-openapi-starter-webflux-ui", version.ref = "swaggerVersion"}
+swagger-annotations = {group = "io.swagger.core.v3", name = "swagger-annotations", version.ref = "swaggerAnnotationsVersion"}
+
+thymeleaf-spring6 = {group = "org.thymeleaf", name = "thymeleaf-spring6", version.ref = "thymeleafVersion"}
+aerogear-otp-java = {group = "org.jboss.aerogear", name = "aerogear-otp-java", version.ref = "aerogearOtpVersion"}
+totp = {group = "dev.samstevens.totp", name = "totp", version.ref = "totpVersion"}
+
+[bundles]
+spring-starter = ["spring-boot-starter-security", "spring-boot-starter-data-jpa", "spring-boot-starter-web",
+    "spring-boot-starter-validation", "spring-boot-starter-oauth2-resource-server", "spring-cloud-starter-netflix-eureka-client"]
+com-kamegatze = ["com-kamegatze-general-dto", "com-kamegatze-authorization-authorization-remote-jwt"]
+
+core-library = ["nimbus-jose-jwt", "modelmapper", "liquibase-core", "jetbrains-annotations", "springdoc-openapi-starter-webmvc-ui"]
+
+[plugins]
+org-springframework-boot = {id = "org.springframework.boot", version.ref = "org-springframework-boot"}
+dependency-management = {id = "io.spring.dependency-management", version.ref = "dependency-management"}
