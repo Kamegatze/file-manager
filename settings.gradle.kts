@@ -6,7 +6,7 @@ includeBuild("./authorization-remote-jwt")
 
 includeBuild("./authorization-microservice")
 
-includeBuild("./doc-service")
+includeBuild("./gateway-service")
 
 includeBuild("./eureka-server")
 

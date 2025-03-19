@@ -8,4 +8,4 @@ dependencyResolutionManagement {
         }
     }
 }
-rootProject.name = "doc-service"
+rootProject.name = "gateway-service"

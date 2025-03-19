@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   application:
@@ -14,11 +14,11 @@ spring:
         - id: authorization-microservice
           uri: http://localhost:9200
           predicates:
-            - Path=/authorization-microservice/**
+            - Path=/authorization-microservice/**, /api/v1/auth/**
         - id: file-manager
           uri: http://localhost:9000
           predicates:
-            - Path=/file-manager/**
+            - Path=/file-manager/**, /api/v1/file-system/**
 
 eureka:
   client:
