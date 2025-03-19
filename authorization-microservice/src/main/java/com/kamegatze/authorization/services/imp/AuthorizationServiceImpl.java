@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,6 +67,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private final MFATokenService mfaTokenService;
     private final CookieProperties cookieProperties;
 
+    private static final String TEMPLATE_MESSAGE_NOT_EXISTS_USER = "User with login: [%s] not exist";
 
     @Value("${spring.kafka.topics.save.users}")
     private String topicSaveUsers;
@@ -174,7 +176,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return tokenValid(token) && tokenValid(refreshTokenOptional.get());
     }
 
-    private Boolean tokenValid(String token) throws ParseException {
+    private Boolean tokenValid(String token) {
         try {
             OAuth2TokenValidatorResult result = jwtValidator.validate(
                     new Jwt(token,
@@ -207,12 +209,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         String token = tokenRefreshOptional.get();
 
-        if (!tokenValid(token)) {
+        if (!tokenValid(token).equals(Boolean.TRUE)) {
             throw new InvalidBearerTokenException("Refresh token invalid");
         }
         String login = jwtService.getLogin(token);
-        if (!usersRepository.existsByLogin(login)) {
-            throw new UserNotExistException(String.format("User with login: [%s] not exist", login));
+        if (!usersRepository.existsByLogin(login).equals(Boolean.TRUE)) {
+            throw new UserNotExistException(String.format(TEMPLATE_MESSAGE_NOT_EXISTS_USER, login));
         }
         UserDetails userDetails = usersDetailsService.loadUserByUsername(login);
         String accessToken = jwtService.generateAccess(userDetails);
@@ -226,8 +228,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public Boolean isExistUser(String loginOrEmail) {
-        String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        boolean isEmail = Pattern.compile(EMAIL_PATTERN).matcher(loginOrEmail).matches();
+        String emailPattern = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+        boolean isEmail = Pattern.compile(emailPattern).matcher(loginOrEmail).matches();
         if (isEmail) {
             return usersRepository.existsByEmail(loginOrEmail);
         }
@@ -250,7 +252,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public void changePassword(ChangePasswordDto changePasswordDto) {
-
+        throw new NotImplementedException();
     }
 
     @Override
@@ -264,7 +266,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String header = headerOptional.get().substring(7);
         JWTClaimsSet claimsSet = JWTParser.parse(header).getJWTClaimsSet();
         List<Authority> authorities = usersRepository.findByLogin(claimsSet.getSubject()).orElseThrow(
-                () -> new UserNotExistException(String.format("User with login: [%s] not exist", claimsSet.getSubject()))
+                () -> new UserNotExistException(String.format(TEMPLATE_MESSAGE_NOT_EXISTS_USER, claimsSet.getSubject()))
         ).getAuthorities();
         return authorities.stream().map(
                 authority -> new AuthorityDto(authority.getName().name())
@@ -292,7 +294,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     public InfoAboutUser getInfoAboutUserByLogin(String login) {
         Users users = usersRepository.findByLogin(login)
                 .orElseThrow(
-                        () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))
+                        () -> new UserNotExistException(String.format(TEMPLATE_MESSAGE_NOT_EXISTS_USER, login))
                 );
 
         return new InfoAboutUser(users.getLogin(), users.isEnable2fa());
@@ -303,7 +305,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .findFirst().orElseThrow(() -> new NoSuchElementException("Jwt is null")).getValue();
         String login = jwtService.getLogin(jwt);
         return usersRepository.findByLogin(login).orElseThrow(
-                () -> new UserNotExistException(String.format("User with login: [%s] not exist", login))
+                () -> new UserNotExistException(String.format(TEMPLATE_MESSAGE_NOT_EXISTS_USER, login))
         );
     }
 }

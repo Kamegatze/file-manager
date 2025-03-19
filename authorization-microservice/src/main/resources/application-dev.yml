@@ -1,0 +1,19 @@
+token:
+  cookie:
+    jwt:
+      access-token:
+        name: access-token
+        path: /
+        domain: localhost
+        max-age: ${app.access-token}
+        http-only: true
+        secure: false
+        sameSite: Strict
+      refresh-token:
+        name: refresh-token
+        path: /
+        domain: localhost
+        max-age: ${app.access-token}
+        http-only: true
+        secure: false
+        sameSite: Strict
