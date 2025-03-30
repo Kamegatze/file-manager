@@ -39,7 +39,7 @@ spring:
         max-request-size: 5GB
 
   application:
-    name: file-manager
+    name: file_manager
 
 token:
   cookie:
@@ -59,14 +59,6 @@ logging:
     org:
       springframework:
         security: debug
-
-service:
-  authentication:
-    is-authentication:
-      url: api/authentication/micro-service/is-authentication
-      protocol: http
-      port: 9200
-      host: localhost
 
 springdoc:
   api-docs:

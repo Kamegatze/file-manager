@@ -1,0 +1,17 @@
+authorization:
+  uri: http://authorization-microservice:9200/api/v1/auth/is-authentication
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8081/eureka
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
