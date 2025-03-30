@@ -1,0 +1,48 @@
+[versions]
+springCloudVersion = "2024.0.0"
+swaggerVersion = "2.8.5"
+nimbusJwt = "9.47"
+modelMapperVersion = "3.2.0"
+jetbrainsAnnotation = "24.1.0"
+org-springframework-boot = "3.4.3"
+dependency-management = "1.1.7"
+
+com-kamegatze-authorization-authorization-remote-jwt-version="1.0-SNAPSHOT"
+com-kamegatze-general-dto-version="1.0"
+
+[libraries]
+nimbus-jose-jwt = {group = "com.nimbusds", name = "nimbus-jose-jwt", version.ref = "nimbusJwt"}
+modelmapper = {group = "org.modelmapper", name = "modelmapper", version.ref = "modelMapperVersion"}
+liquibase-core = {group = "org.liquibase", name = "liquibase-core"}
+jetbrains-annotations = {group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotation"}
+springdoc-openapi-starter-webmvc-ui = {group = "org.springdoc", name  = "springdoc-openapi-starter-webmvc-ui", version.ref = "swaggerVersion"}
+
+
+spring-kafka = {group = "org.springframework.kafka", name = "spring-kafka"}
+spring-cloud-dependencies = {group = "org.springframework.cloud", name = "spring-cloud-dependencies", version.ref = "springCloudVersion"}
+
+spring-boot-starter-security = {group = "org.springframework.boot", name = "spring-boot-starter-security"}
+spring-boot-starter-data-jpa = {group = "org.springframework.boot", name = "spring-boot-starter-data-jpa"}
+spring-boot-starter-web = {group = "org.springframework.boot", name = "spring-boot-starter-web"}
+spring-boot-starter-validation = {group = "org.springframework.boot", name = "spring-boot-starter-validation"}
+spring-boot-starter-oauth2-resource-server = {group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server"}
+spring-cloud-starter-netflix-eureka-client = {group = "org.springframework.cloud", name = "spring-cloud-starter-netflix-eureka-client"}
+
+com-kamegatze-general-dto = {group = "com.kamegatze", name = "general-dto", version.ref = "com-kamegatze-general-dto-version"}
+com-kamegatze-authorization-authorization-remote-jwt = {group = "com.kamegatze.authorization", name = "authorization-remote-jwt", version.ref = "com-kamegatze-authorization-authorization-remote-jwt-version"}
+
+postgresql = {group = "org.postgresql", name = "postgresql"}
+
+lombok = {group = "org.projectlombok", name = "lombok"}
+
+
+[bundles]
+spring-starter = ["spring-boot-starter-security", "spring-boot-starter-data-jpa", "spring-boot-starter-web",
+    "spring-boot-starter-validation", "spring-boot-starter-oauth2-resource-server", "spring-cloud-starter-netflix-eureka-client"]
+com-kamegatze = ["com-kamegatze-general-dto", "com-kamegatze-authorization-authorization-remote-jwt"]
+
+core-library = ["nimbus-jose-jwt", "modelmapper", "liquibase-core", "jetbrains-annotations", "springdoc-openapi-starter-webmvc-ui"]
+
+[plugins]
+org-springframework-boot = {id = "org.springframework.boot", version.ref = "org-springframework-boot"}
+dependency-management = {id = "io.spring.dependency-management", version.ref = "dependency-management"}

@@ -1,2 +1,15 @@
 path:
   default: ./file_manager/src/main/resources/temp-files-for-download
+
+eureka:
+  client:
+    enabled: false
+
+spring:
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://192.168.1.103:5433/file_manager
+
+  kafka:
+    bootstrap-servers: 192.168.1.103:29092

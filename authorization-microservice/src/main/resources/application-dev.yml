@@ -1,0 +1,33 @@
+token:
+  cookie:
+    jwt:
+      access-token:
+        name: access-token
+        path: /
+        domain: localhost
+        max-age: ${app.access-token}
+        http-only: true
+        secure: false
+        sameSite: Strict
+      refresh-token:
+        name: refresh-token
+        path: /
+        domain: localhost
+        max-age: ${app.access-token}
+        http-only: true
+        secure: false
+        sameSite: Strict
+
+eureka:
+  client:
+    enabled: false
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://192.168.1.103:5434/authorization
+
+  kafka:
+    bootstrap-servers: 192.168.1.103:29092

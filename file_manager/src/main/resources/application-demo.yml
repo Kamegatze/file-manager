@@ -1,0 +1,16 @@
+path:
+  default: ./temp-files-for-download
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8081/eureka
+
+spring:
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://file-manager-file-system:5432/file_manager
+
+  kafka:
+    bootstrap-servers: kafka-file-manager:29092
