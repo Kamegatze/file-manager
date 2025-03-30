@@ -60,14 +60,6 @@ logging:
       springframework:
         security: debug
 
-service:
-  authentication:
-    is-authentication:
-      url: api/authentication/micro-service/is-authentication
-      protocol: http
-      port: 9200
-      host: localhost
-
 springdoc:
   api-docs:
     path: '/${spring.application.name}/v3/api-docs'
