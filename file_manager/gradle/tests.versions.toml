@@ -1,0 +1,8 @@
+[libraries]
+spring-security-test = {group = "org.springframework.security", name = "spring-security-test"}
+spring-boot-starter-test = {group = "org.springframework.boot", name = "spring-boot-starter-test"}
+spring-kafka-test = {group = "org.springframework.kafka", name = "spring-kafka-test"}
+testcontainers-postgresql = {group = "org.testcontainers", name = "postgresql"}
+
+[bundles]
+tests = ["spring-security-test", "spring-boot-starter-test", "spring-kafka-test", "testcontainers-postgresql"]

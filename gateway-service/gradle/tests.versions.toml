@@ -1,0 +1,2 @@
+[libraries]
+spring-boot-starter-test = {group = "org.springframework.boot", name = "spring-boot-starter-test"}
