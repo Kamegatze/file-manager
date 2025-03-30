@@ -1,13 +1,6 @@
 server:
   port: 8080
 
-authorization:
-  uri: http://localhost:9200/api/v1/auth/is-authentication
-  routes-skip:
-    - /file-manager/**
-    - /authorization-microservice/**
-    - /api/v1/auth/**
-
 spring:
   application:
     name: gateway-service
@@ -23,18 +16,31 @@ spring:
         - Authorization
       routes:
         - id: authorization-microservice
-          uri: http://localhost:9200
+          uri: lb://${spring.cloud.gateway.routes[0].id}
           predicates:
             - Path=/authorization-microservice/**, /api/v1/auth/**
-        - id: file-manager
-          uri: http://localhost:9000
+        - id: file_manager
+          uri: lb://${spring.cloud.gateway.routes[1].id}
           predicates:
             - Path=/file-manager/**, /api/v1/file-system/**
+        - id: eureka
+          uri: http://${spring.cloud.gateway.routes[2].id}:8081
+          predicates:
+            - Path=/eureka-ui, /eureka/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
+
+authorization:
+  uri: http://localhost:9200/api/v1/auth/is-authentication
+  routes-skip:
+    - /${spring.cloud.gateway.routes[0].id}/**
+    - /${spring.cloud.gateway.routes[1].id}/**
+    - /api/v1/auth/**
+    - /eureka-ui/**
+    - /${spring.cloud.gateway.routes[2].id}/**
 
 springdoc:
   api-docs:
