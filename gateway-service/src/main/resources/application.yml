@@ -7,6 +7,8 @@ authorization:
     - /file-manager/**
     - /authorization-microservice/**
     - /api/v1/auth/**
+    - /eureka-ui/**
+    - /eureka/**
 
 spring:
   application:
@@ -23,13 +25,17 @@ spring:
         - Authorization
       routes:
         - id: authorization-microservice
-          uri: http://localhost:9200
+          uri: lb://authorization-microservice:9200
           predicates:
             - Path=/authorization-microservice/**, /api/v1/auth/**
         - id: file-manager
-          uri: http://localhost:9000
+          uri: lb://file_manager:9000
           predicates:
             - Path=/file-manager/**, /api/v1/file-system/**
+        - id: eureka
+          uri: http://eureka-server:8081
+          predicates:
+            - Path=/eureka-ui, /eureka/**
 
 eureka:
   client:

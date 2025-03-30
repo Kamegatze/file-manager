@@ -10,13 +10,16 @@ dependency-management = "1.1.7"
 com-kamegatze-authorization-authorization-remote-jwt-version="1.0-SNAPSHOT"
 com-kamegatze-general-dto-version="1.0"
 
+swagger-annotations-version = "2.2.29"
+
 [libraries]
 nimbus-jose-jwt = {group = "com.nimbusds", name = "nimbus-jose-jwt", version.ref = "nimbusJwt"}
 modelmapper = {group = "org.modelmapper", name = "modelmapper", version.ref = "modelMapperVersion"}
 liquibase-core = {group = "org.liquibase", name = "liquibase-core"}
 jetbrains-annotations = {group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotation"}
-springdoc-openapi-starter-webmvc-ui = {group = "org.springdoc", name  = "springdoc-openapi-starter-webmvc-ui", version.ref = "swaggerVersion"}
 
+springdoc-openapi-starter-webmvc-ui = {group = "org.springdoc", name  = "springdoc-openapi-starter-webmvc-ui", version.ref = "swaggerVersion"}
+swagger-annotations = {group = "io.swagger.core.v3", name = "swagger-annotations", version.ref = "swagger-annotations-version"}
 
 spring-kafka = {group = "org.springframework.kafka", name = "spring-kafka"}
 spring-cloud-dependencies = {group = "org.springframework.cloud", name = "spring-cloud-dependencies", version.ref = "springCloudVersion"}
@@ -41,7 +44,7 @@ spring-starter = ["spring-boot-starter-security", "spring-boot-starter-data-jpa"
     "spring-boot-starter-validation", "spring-boot-starter-oauth2-resource-server", "spring-cloud-starter-netflix-eureka-client"]
 com-kamegatze = ["com-kamegatze-general-dto", "com-kamegatze-authorization-authorization-remote-jwt"]
 
-core-library = ["nimbus-jose-jwt", "modelmapper", "liquibase-core", "jetbrains-annotations", "springdoc-openapi-starter-webmvc-ui"]
+core-library = ["nimbus-jose-jwt", "modelmapper", "liquibase-core", "jetbrains-annotations", "springdoc-openapi-starter-webmvc-ui", "swagger-annotations"]
 
 [plugins]
 org-springframework-boot = {id = "org.springframework.boot", version.ref = "org-springframework-boot"}
