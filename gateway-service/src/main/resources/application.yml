@@ -23,7 +23,7 @@ spring:
           uri: lb://${spring.cloud.gateway.routes[1].id}
           predicates:
             - Path=/file-manager/**, /api/v1/file-system/**
-        - id: eureka
+        - id: eureka-server
           uri: http://${spring.cloud.gateway.routes[2].id}:8081
           predicates:
             - Path=/eureka-ui, /eureka/**
@@ -40,7 +40,7 @@ authorization:
     - /${spring.cloud.gateway.routes[1].id}/**
     - /api/v1/auth/**
     - /eureka-ui/**
-    - /${spring.cloud.gateway.routes[2].id}/**
+    - /eureka/**
 
 springdoc:
   api-docs:
