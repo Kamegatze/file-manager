@@ -28,7 +28,8 @@ spring:
           uri: lb://authorization-microservice:9200
           predicates:
             - Path=/authorization-microservice/**, /api/v1/auth/**
-        - id: file-manager
+
+        - id: file_manager
           uri: lb://file_manager:9000
           predicates:
             - Path=/file-manager/**, /api/v1/file-system/**
