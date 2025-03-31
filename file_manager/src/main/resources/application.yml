@@ -39,7 +39,7 @@ spring:
         max-request-size: 5GB
 
   application:
-    name: file_manager
+    name: file-manager
 
 token:
   cookie:
